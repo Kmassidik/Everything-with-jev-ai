@@ -50,5 +50,5 @@ func (s *Server) claimsScreen(w http.ResponseWriter, r *http.Request) {
 	if err := s.ledger.Record(r.Context(), s.user(r), rep.TokensIn, rep.TokensOut, 1); err != nil {
 		s.log.Warn("ledger record failed", "err", err)
 	}
-	_ = web.ClaimReport(rep).Render(r.Context(), w)
+	_ = web.ItemReport(rep, "category").Render(r.Context(), w)
 }

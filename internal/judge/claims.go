@@ -7,45 +7,30 @@ import (
 	"jevai/internal/jev"
 )
 
-// Claim is one piece of marketing copy to screen, with its product category.
-type Claim struct {
-	Copy     string
-	Category string
-}
-
-// ClaimFinding is one rule's verdict on the copy.
-type ClaimFinding struct {
-	Key   string
-	Label string
-	Prob  float64
-	Flag  bool
-}
-
-// ClaimReport is the outcome of screening one piece of copy.
-type ClaimReport struct {
-	Category  string
-	Findings  []ClaimFinding // sorted most-likely-problem first
+// ItemReport is the result of running a pack over a single item (a piece of copy,
+// an ad creative…). Surfaces that judge many rules against one item share it.
+type ItemReport struct {
+	Context   string // free label: a category, a platform, etc.
+	Findings  []Finding
 	Flags     int
 	TokensIn  int
 	TokensOut int
 	Sample    bool
 }
 
-// Screen runs the pack over one piece of copy in a single Jev request (many rules,
-// one item — the fan-out pattern), and returns findings sorted worst-first.
-func Screen(ctx context.Context, j jev.Judge, pack Pack, c Claim) (*ClaimReport, error) {
-	state := map[string]string{"copy": c.Copy, "category": c.Category}
+// runPack runs the pack over one state in a single Jev request (many rules, one
+// item — the fan-out pattern) and returns a worst-first report.
+func runPack(ctx context.Context, j jev.Judge, pack Pack, ctxLabel string, state map[string]string) (*ItemReport, error) {
 	resp, err := j.SystemOne(ctx, state, pack.questions())
 	if err != nil {
 		return nil, err
 	}
-
-	rep := &ClaimReport{
-		Category:  c.Category,
+	rep := &ItemReport{
+		Context:   ctxLabel,
 		Sample:    !j.Live(),
 		TokensIn:  resp.Usage.InputTokens,
 		TokensOut: resp.Usage.OutputTokens,
-		Findings:  make([]ClaimFinding, 0, len(pack.Checks)),
+		Findings:  make([]Finding, 0, len(pack.Checks)),
 	}
 	for _, ch := range pack.Checks {
 		p := resp.Noul(ch.Key)
@@ -57,10 +42,36 @@ func Screen(ctx context.Context, j jev.Judge, pack Pack, c Claim) (*ClaimReport,
 		if flag {
 			rep.Flags++
 		}
-		rep.Findings = append(rep.Findings, ClaimFinding{Key: ch.Key, Label: ch.Label, Prob: p, Flag: flag})
+		rep.Findings = append(rep.Findings, Finding{Key: ch.Key, Label: ch.Label, Prob: p, Flag: flag})
 	}
 	sort.SliceStable(rep.Findings, func(a, b int) bool {
 		return rep.Findings[a].Prob > rep.Findings[b].Prob
 	})
 	return rep, nil
+}
+
+// Claim is one piece of marketing copy to screen, with its product category.
+type Claim struct {
+	Copy     string
+	Category string
+}
+
+// Screen runs the claim-screening pack over one piece of copy.
+func Screen(ctx context.Context, j jev.Judge, pack Pack, c Claim) (*ItemReport, error) {
+	return runPack(ctx, j, pack, c.Category, map[string]string{"copy": c.Copy, "category": c.Category})
+}
+
+// Ad is one ad creative plus (optional) landing-page copy and the target platform.
+type Ad struct {
+	Creative string
+	Landing  string
+	Platform string
+}
+
+// Preflight runs the ad-preflight pack over one creative (judged against its
+// landing copy when provided).
+func Preflight(ctx context.Context, j jev.Judge, pack Pack, a Ad) (*ItemReport, error) {
+	return runPack(ctx, j, pack, a.Platform, map[string]string{
+		"creative": a.Creative, "landing": a.Landing, "platform": a.Platform,
+	})
 }

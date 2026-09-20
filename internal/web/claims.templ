@@ -1,7 +1,5 @@
 package web
 
-import "jevai/internal/judge"
-
 templ Claims() {
 	@Layout("jevai — claim screening") {
 		@CropMarks()
@@ -39,32 +37,5 @@ templ Claims() {
 			</p>
 		</main>
 		@Foot()
-	}
-}
-
-templ ClaimReport(rep *judge.ClaimReport) {
-	@Window("result · claim-screening") {
-		<div class="mb-3 font-mono text-xs text-muted">category: { rep.Category }</div>
-		<ul class="grid gap-2">
-			for _, f := range rep.Findings {
-				<li class="flex items-center justify-between gap-4 border-b border-ink/10 pb-2 font-mono text-xs">
-					<span class="flex items-center gap-2">
-						if f.Flag {
-							<span class="inline-block h-2 w-2 bg-magenta"></span>
-						} else {
-							<span class="inline-block h-2 w-2 border border-ink/30"></span>
-						}
-						<span class={ flagText(f.Flag) }>{ f.Label }</span>
-					</span>
-					<span class={ riskClass(f.Prob) }>{ pct(f.Prob) }</span>
-				</li>
-			}
-		</ul>
-		<p class="label mt-3">
-			{ claimMeta(rep) }
-			if rep.Sample {
-				<span class="text-magenta"> · SAMPLE — set TYPESAFE_API_KEY for live</span>
-			}
-		</p>
 	}
 }

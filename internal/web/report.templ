@@ -1,0 +1,34 @@
+package web
+
+import "jevai/internal/judge"
+
+// ItemReport renders a single-item screening result (claims, ad pre-flight…).
+// label names the Context value (e.g. "category" or "platform").
+templ ItemReport(rep *judge.ItemReport, label string) {
+	@Window("result · screening") {
+		if rep.Context != "" {
+			<div class="mb-3 font-mono text-xs text-muted">{ label }: { rep.Context }</div>
+		}
+		<ul class="grid gap-2">
+			for _, f := range rep.Findings {
+				<li class="flex items-center justify-between gap-4 border-b border-ink/10 pb-2 font-mono text-xs">
+					<span class="flex items-center gap-2">
+						if f.Flag {
+							<span class="inline-block h-2 w-2 bg-magenta"></span>
+						} else {
+							<span class="inline-block h-2 w-2 border border-ink/30"></span>
+						}
+						<span class={ flagText(f.Flag) }>{ f.Label }</span>
+					</span>
+					<span class={ riskClass(f.Prob) }>{ pct(f.Prob) }</span>
+				</li>
+			}
+		</ul>
+		<p class="label mt-3">
+			{ itemMeta(rep) }
+			if rep.Sample {
+				<span class="text-magenta"> · SAMPLE — set TYPESAFE_API_KEY for live</span>
+			}
+		</p>
+	}
+}

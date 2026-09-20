@@ -49,7 +49,7 @@ func demoNote(live bool) string {
 	return "SAMPLE — set TYPESAFE_API_KEY for a live judgment."
 }
 
-func claimMeta(r *judge.ClaimReport) string {
+func itemMeta(r *judge.ItemReport) string {
 	return fmt.Sprintf("%d flagged of %d · %d tokens", r.Flags, len(r.Findings), r.TokensIn+r.TokensOut)
 }
 

@@ -80,3 +80,31 @@ var ClaimScreening = Pack{
 		}},
 	},
 }
+
+// AdPreflight screens an ad creative before spend. The landing_mismatch check reads
+// the creative against `landing` (pasted landing-page copy) when provided.
+var AdPreflight = Pack{
+	Name: "ad-preflight",
+	Checks: []Check{
+		{Key: "prohibited_claim", Label: "Prohibited / overreaching claim", Weight: 1.2, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `creative` make a prohibited or overreaching advertising claim (medical cure, guaranteed income or results, miracle outcome)?",
+		}},
+		{Key: "brand_unsafe", Label: "Brand-unsafe content", Weight: 1.0, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `creative` contain brand-unsafe content (adult, violence, hate, shocking, or illegal)?",
+		}},
+		{Key: "restricted_category", Label: "Restricted ad category", Weight: 0.8, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `creative` fall in a restricted ad category (health, finance, politics, dating) that needs special rules for `platform`?",
+		}},
+		{Key: "misleading_urgency", Label: "Misleading urgency / superlative", Weight: 0.7, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `creative` use misleading urgency, fake scarcity, or unsupported superlatives ('#1', 'best ever')?",
+		}},
+		{Key: "landing_mismatch", Label: "Creative ≠ landing page", Weight: 1.0, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Given `landing`, does the ad `creative` promise something the landing page does not deliver? Answer false if `landing` is empty.",
+		}},
+	},
+}

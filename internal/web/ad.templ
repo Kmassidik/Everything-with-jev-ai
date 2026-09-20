@@ -1,0 +1,39 @@
+package web
+
+templ Ads() {
+	@Layout("jevai — ad pre-flight") {
+		@CropMarks()
+		@Nav()
+		<main class="mx-auto max-w-4xl px-5 py-16">
+			<p class="label">Surface · ad pre-flight</p>
+			<h1 class="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Pre-flight every ad.</h1>
+			<p class="mt-4 max-w-xl text-ink/70">
+				Paste an ad creative before you spend. It's screened for prohibited claims,
+				brand safety, restricted categories, misleading urgency — and whether it matches
+				the landing page.
+			</p>
+			<form
+				class="mt-8 grid gap-3"
+				hx-post="/ads/preflight"
+				hx-target="#ad-out"
+				hx-swap="innerHTML"
+				hx-indicator="#spin"
+			>
+				<textarea name="creative" rows="4" required class="field" placeholder="Ad creative / headline + body…"></textarea>
+				<textarea name="landing" rows="3" class="field" placeholder="Landing page copy (optional — enables the match check)…"></textarea>
+				<select name="platform" class="field">
+					<option value="meta">Meta (Facebook / Instagram)</option>
+					<option value="google">Google</option>
+					<option value="tiktok">TikTok</option>
+					<option value="general">General</option>
+				</select>
+				<div class="flex items-center gap-3">
+					<button type="submit" class="box-btn w-fit">Pre-flight →</button>
+					<span id="spin" class="htmx-indicator label">checking…</span>
+				</div>
+			</form>
+			<div id="ad-out" class="mt-10"></div>
+		</main>
+		@Foot()
+	}
+}
