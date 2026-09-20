@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  jevai engine LaunchAgent (per-user, KeepAlive). Install:
+    cp deploy/id.jevai.engine.plist ~/Library/LaunchAgents/
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/id.jevai.engine.plist
+  Set TYPESAFE_API_KEY here (or leave empty for SAMPLE mode). Paths assume ~/jevai/engine.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>id.jevai.engine</string>
+  <key>ProgramArguments</key><array><string>/Users/lucacadalora/jevai/engine</string></array>
+  <key>EnvironmentVariables</key><dict>
+    <key>PORT</key><string>8092</string>
+    <key>JEVAI_DB</key><string>/Users/lucacadalora/jevai/jevai.db</string>
+    <key>JEVAI_TRIAL_TOKENS</key><string>1000000</string>
+    <!-- <key>TYPESAFE_API_KEY</key><string>...</string> -->
+  </dict>
+  <key>WorkingDirectory</key><string>/Users/lucacadalora/jevai</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/lucacadalora/jevai/engine.log</string>
+  <key>StandardErrorPath</key><string>/Users/lucacadalora/jevai/engine.log</string>
+</dict>
+</plist>
