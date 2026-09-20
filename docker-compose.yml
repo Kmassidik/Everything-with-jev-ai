@@ -1,0 +1,10 @@
+services:
+  engine:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      TYPESAFE_API_KEY: "${TYPESAFE_API_KEY:-}"
+      JEV_MODEL: "${JEV_MODEL:-jev-latest}"
+    restart: unless-stopped

@@ -1,0 +1,18 @@
+# build output
+/bin/
+/tmp/
+result
+
+# generated (run `just generate`)
+*_templ.go
+internal/web/static/css/app.css
+
+# secrets & local
+.env
+*.db
+*.db-*
+
+# os / editor
+.DS_Store
+.direnv/
+*.log

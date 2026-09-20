@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer components {
+  /* retro OS window chrome (like typesafe.ai) */
+  .win {
+    @apply border border-ink bg-paper;
+  }
+  .win-bar {
+    @apply flex items-center gap-1.5 border-b border-ink px-2 py-1 font-mono text-[11px] uppercase tracking-wide;
+  }
+  .win-dot {
+    @apply inline-block h-2 w-2 border border-ink;
+  }
+
+  /* mono micro-label */
+  .label {
+    @apply font-mono text-[11px] uppercase tracking-[0.16em] text-muted;
+  }
+
+  /* underlined text-link button */
+  .link-btn {
+    @apply font-display font-medium underline decoration-2 underline-offset-4 transition-opacity hover:opacity-60;
+  }
+
+  /* boxed button */
+  .box-btn {
+    @apply inline-flex items-center justify-center border border-ink bg-ink px-4 py-2 font-mono text-sm text-paper transition-colors hover:bg-transparent hover:text-ink;
+  }
+
+  .field {
+    @apply w-full border border-ink bg-paper p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-pink;
+  }
+}

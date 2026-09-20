@@ -1,0 +1,131 @@
+package web
+
+templ Landing(hasKey bool) {
+	@Layout("jevai — judgment, not chat") {
+		@CropMarks()
+		@Nav()
+		<main>
+			<!-- hero -->
+			<section class="mx-auto max-w-5xl px-5 pb-12 pt-20 text-center">
+				<p class="label mb-6">Introducing jevai ···· intelligence beyond chat</p>
+				<h1 class="font-display text-[clamp(2.75rem,8vw,7rem)] font-extrabold leading-[0.92] tracking-tight">
+					Judge Every Row.<br/>Calibrated.<br/>In Milliseconds.
+				</h1>
+				<p class="mx-auto mt-8 max-w-xl text-lg text-ink/70">
+					A typed judgment for every item in your stream — not a chatbot. Powered by Jev:
+					one call, typed answers, calibrated confidence, ~300&nbsp;ms.
+				</p>
+				<div class="mt-10 flex items-center justify-center gap-8">
+					<a href="#try" class="link-btn text-xl">Get started</a>
+					<a href="#how" class="link-btn text-xl">See how</a>
+				</div>
+			</section>
+			<!-- news window -->
+			<section class="mx-auto max-w-md px-5 pb-20">
+				@Window("jevai news · Sep 2026") {
+					<div class="flex items-center justify-between gap-4 font-mono text-xs">
+						<span>Judgment as code — now on your Mac.</span>
+						<a href="#" class="underline underline-offset-2">Read more</a>
+					</div>
+				}
+			</section>
+			<!-- how: pink section with benchmark window -->
+			<section id="how" class="border-y border-ink bg-pink">
+				<div class="mx-auto max-w-5xl px-5 py-20">
+					<div class="mx-auto max-w-lg">
+						@Window("JEV.OS · speed × cost") {
+							<table class="w-full border-collapse font-mono text-xs">
+								<tbody>
+									<tr class="border-b border-ink/20">
+										<td class="py-1.5">Jev (TypeSafe)</td>
+										<td class="text-right">193.6×</td>
+										<td class="text-right">$0.39</td>
+									</tr>
+									<tr class="border-b border-ink/20">
+										<td class="py-1.5">Claude Opus 5</td>
+										<td class="text-right">2.1×</td>
+										<td class="text-right">$176.05</td>
+									</tr>
+									<tr class="border-b border-ink/20">
+										<td class="py-1.5">Claude Sonnet 5</td>
+										<td class="text-right">1.0×</td>
+										<td class="text-right">$117.38</td>
+									</tr>
+									<tr>
+										<td class="py-1.5">GPT-5.6-Luna</td>
+										<td class="text-right">6.0×</td>
+										<td class="text-right">$3.31</td>
+									</tr>
+								</tbody>
+							</table>
+						}
+					</div>
+					<h2 class="mt-14 font-display text-[clamp(2.25rem,6vw,5rem)] font-extrabold leading-[0.92] tracking-tight">
+						Judge Every Item.<br/>Not A Sample.
+					</h2>
+					<p class="mt-5 max-w-xl text-ink/80">
+						At $0.00004 and ~300&nbsp;ms per judgment you can look at every row, listing and
+						ad — typed, calibrated, and it tells you when it doesn't know.
+					</p>
+				</div>
+			</section>
+			<!-- surfaces -->
+			<section id="surfaces" class="mx-auto max-w-5xl px-5 py-20">
+				<p class="label">Surfaces</p>
+				<h3 class="mt-2 font-display text-3xl font-bold">One engine. Every judged workflow.</h3>
+				<div class="mt-8 grid gap-4 sm:grid-cols-3">
+					@surfaceCard("Listing hygiene", "CSV of SKUs → ranked fix list", "grass")
+					@surfaceCard("Ad pre-flight", "creative + landing → risk report", "teal")
+					@surfaceCard("Claim screening", "copy + rules → flagged claims", "magenta")
+				</div>
+			</section>
+			<!-- try (HTMX demo) -->
+			<section id="try" class="border-t border-ink bg-ink text-paper">
+				<div class="mx-auto max-w-3xl px-5 py-20">
+					<p class="label text-paper/60">Try it</p>
+					<h3 class="mt-2 font-display text-3xl font-bold">A typed judgment, live.</h3>
+					<form
+						class="mt-6 grid gap-3"
+						hx-post="/demo/judge"
+						hx-target="#demo-out"
+						hx-swap="innerHTML"
+					>
+						<textarea name="state" rows="3" class="field text-ink" placeholder="Paste text to judge…">Help! My payouts have failed for 3 days.</textarea>
+						<input name="question" class="field text-ink" placeholder="Ask a yes/no question…" value="Does this convey urgency?"/>
+						<button type="submit" class="box-btn w-fit bg-pink text-ink hover:bg-paper">Run judgment →</button>
+					</form>
+					<div id="demo-out" class="mt-6"></div>
+				</div>
+			</section>
+		</main>
+		@Foot()
+	}
+}
+
+templ surfaceCard(title, desc, accent string) {
+	<div class="win">
+		<div class="win-bar">
+			<span class={ "win-dot", templ.KV("bg-grass", accent == "grass"), templ.KV("bg-teal", accent == "teal"), templ.KV("bg-magenta", accent == "magenta") }></span>
+			<span>{ title }</span>
+		</div>
+		<div class="p-4 font-mono text-xs text-ink/70">{ desc }</div>
+	</div>
+}
+
+// DemoResult is the HTMX fragment returned by POST /demo/judge.
+templ DemoResult(question string, hasKey bool) {
+	@Window("result · noul") {
+		<div class="font-mono text-xs text-ink">
+			<div class="label mb-2">{ question }</div>
+			if hasKey {
+				<div class="text-3xl font-bold text-grass">0.92</div>
+				<p class="mt-2 text-ink/60">Live via Jev. (Real call wired in build step 2.)</p>
+			} else {
+				<div class="text-3xl font-bold text-muted">— · —</div>
+				<p class="mt-2 text-ink/60">
+					Set <span class="text-ink">TYPESAFE_API_KEY</span> to run a live judgment — this is the scaffold.
+				</p>
+			}
+		</div>
+	}
+}

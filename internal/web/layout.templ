@@ -1,0 +1,71 @@
+package web
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ title }</title>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+			<link
+				href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Host+Grotesk:wght@400;500;700;800&display=swap"
+				rel="stylesheet"
+			/>
+			<link rel="stylesheet" href="/static/css/app.css"/>
+			<script src="/static/js/htmx.min.js" defer></script>
+		</head>
+		<body class="min-h-full bg-paper font-sans text-ink">
+			{ children... }
+		</body>
+	</html>
+}
+
+// CropMarks — the corner registration marks from typesafe.ai.
+templ CropMarks() {
+	<div class="pointer-events-none fixed inset-0 z-50">
+		<span class="absolute left-3 top-3 h-3 w-3 border-l border-t border-ink"></span>
+		<span class="absolute right-3 top-3 h-3 w-3 border-r border-t border-ink"></span>
+		<span class="absolute bottom-3 left-3 h-3 w-3 border-b border-l border-ink"></span>
+		<span class="absolute bottom-3 right-3 h-3 w-3 border-b border-r border-ink"></span>
+	</div>
+}
+
+templ Nav() {
+	<header class="flex items-center gap-6 border-b border-ink px-5 py-3 text-sm">
+		<a href="/" class="font-mono text-base font-bold">jevai</a>
+		<nav class="ml-auto flex items-center gap-5">
+			<a href="#surfaces" class="link-btn">Products</a>
+			<a href="#how" class="link-btn">How</a>
+			<a href="#" class="link-btn">Docs</a>
+			<a href="#" class="link-btn">Sign in</a>
+			<a href="#try" class="box-btn">Get started</a>
+		</nav>
+	</header>
+}
+
+templ Foot() {
+	<footer class="border-t border-ink px-5 py-8 font-mono text-xs text-muted">
+		<div class="mx-auto flex max-w-5xl flex-wrap items-center gap-4">
+			<span class="font-bold text-ink">jevai</span>
+			<span>judgment, not chat</span>
+			<span class="ml-auto">© 2026 · powered by Jev</span>
+		</div>
+	</footer>
+}
+
+// Window — retro OS window chrome.
+templ Window(title string) {
+	<div class="win">
+		<div class="win-bar">
+			<span class="win-dot"></span>
+			<span class="win-dot"></span>
+			<span class="win-dot"></span>
+			<span class="ml-1">{ title }</span>
+		</div>
+		<div class="p-4">
+			{ children... }
+		</div>
+	</div>
+}

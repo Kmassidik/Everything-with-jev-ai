@@ -1,0 +1,10 @@
+.git
+.direnv
+bin
+tmp
+result
+*.db
+*.db-*
+.env
+**/*.log
+.DS_Store
