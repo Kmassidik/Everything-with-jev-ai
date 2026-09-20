@@ -1,30 +1,31 @@
 package web
 
 templ Landing(hasKey bool) {
-	@Layout("jevai — calibrated judgment for every item") {
+	@Layout("jevai — score every item, sort what matters") {
 		@Nav()
 		<main>
 			<!-- hero -->
-			<section class="grid-bg border-b border-line">
+			<section class="grid-bg border-b border-ink">
 				<div class="wrap grid items-center gap-12 py-20 lg:grid-cols-2">
 					<div>
-						<span class="chip"><span class="dot bg-brand"></span> Calibrated judgment API</span>
-						<h1 class="mt-6 font-display text-5xl font-bold leading-[1.04] tracking-tight sm:text-6xl">
-							Judge every item.<br/>Know the <span class="text-brand">confidence.</span>
+						<span class="chip"><span class="inline-block h-2 w-2 bg-lime"></span> The verdict engine</span>
+						<h1 class="mt-6 font-display text-6xl font-bold leading-[0.95] tracking-tight sm:text-7xl">
+							Score the<br/>whole pile.<br/><span class="mark">Sort what matters.</span>
 						</h1>
-						<p class="mt-5 max-w-md text-lg text-muted">
-							A typed verdict on every row, listing and ad — with a calibrated probability,
-							in ~300&nbsp;ms. Not a chatbot: it tells you when it isn't sure.
+						<p class="mt-6 max-w-md text-lg text-muted">
+							Point it at a stream — every listing, ad or claim comes back scored and ranked,
+							worst first. Cheap enough to run on <span class="font-semibold text-ink">all of it</span>,
+							not a sample.
 						</p>
 						<div class="mt-8 flex flex-wrap items-center gap-3">
 							<a href="#try" class="btn-brand">Start free</a>
-							<a href="#how" class="btn-ghost">See how it works</a>
+							<a href="#how" class="btn-ghost">See it work</a>
 						</div>
-						<p class="label mt-6">$0.00004 / judgment · powered by Jev</p>
+						<p class="label mt-6">$0.00004 an item · ~300&nbsp;ms · powered by Jev</p>
 					</div>
 					<!-- hero visual: a live audit, sorted worst-first -->
-					<div class="card overflow-hidden shadow-sm">
-						<div class="flex items-center justify-between border-b border-line bg-paper px-4 py-2.5">
+					<div class="card overflow-hidden shadow-[6px_6px_0_0_#14140F]">
+						<div class="flex items-center justify-between border-b border-ink bg-paper px-4 py-2.5">
 							<span class="label">live · listing audit</span>
 							<span class="label">risk</span>
 						</div>
@@ -34,37 +35,37 @@ templ Landing(hasKey bool) {
 							@heroRow("iPhone 15 Case — clear", "watch", "44%", "w-[44%]")
 							@heroRow("Organic Green Tea 100g", "safe", "8%", "w-[8%]")
 						</div>
-						<div class="label border-t border-line px-4 py-2.5">4 judged · 132 tokens · sorted worst-first</div>
+						<div class="label border-t border-ink px-4 py-2.5">4 scored · 132 tokens · worst first</div>
 					</div>
 				</div>
 			</section>
-			<!-- how -->
-			<section id="how" class="border-b border-line">
+			<!-- how: bold lime block -->
+			<section id="how" class="grid-ink border-b border-ink bg-lime">
 				<div class="wrap py-20">
-					<span class="label">Why Jev, not an LLM</span>
-					<h2 class="mt-3 max-w-2xl font-display text-4xl font-bold tracking-tight">
-						Judge every item — not a sample.
+					<span class="label text-ink/60">Why it hits different</span>
+					<h2 class="mt-3 max-w-3xl font-display text-5xl font-bold leading-[0.95] tracking-tight">
+						Run it on everything. Not a sample.
 					</h2>
-					<p class="mt-4 max-w-2xl text-muted">
-						A judgment used to cost cents and seconds, so you sampled. At Jev prices you look at
-						all of it — typed, calibrated, and honest about uncertainty.
+					<p class="mt-5 max-w-2xl text-lg text-ink/80">
+						A judgment used to cost cents and seconds, so you spot-checked and hoped. Now it's a
+						rounding error — so check every row, every time, and sort the mess by what's actually risky.
 					</p>
-					<div class="mt-10 grid gap-4 sm:grid-cols-3">
-						@stat("~300 ms", "per judgment")
-						@stat("$0.00004", "per item")
-						@stat("typed", "never off-schema")
+					<div class="mt-12 grid gap-4 sm:grid-cols-3">
+						@stat("~300 ms", "a call")
+						@stat("$0.00004", "an item")
+						@stat("100%", "of the pile")
 					</div>
 				</div>
 			</section>
 			<!-- surfaces -->
-			<section id="surfaces" class="border-b border-line">
+			<section id="surfaces" class="border-b border-ink">
 				<div class="wrap py-20">
-					<span class="label">Surfaces</span>
-					<h2 class="mt-3 font-display text-4xl font-bold tracking-tight">One engine. Every judged workflow.</h2>
-					<div class="mt-10 grid gap-4 sm:grid-cols-3">
-						@surfaceCard("01", "Listing hygiene", "CSV of SKUs → ranked fix list", "/listing")
-						@surfaceCard("02", "Ad pre-flight", "creative + landing → risk report", "/ads")
-						@surfaceCard("03", "Claim screening", "copy + rules → flagged claims", "/claims")
+					<span class="label">What you can score</span>
+					<h2 class="mt-3 font-display text-5xl font-bold tracking-tight">One engine. Every pile worth sorting.</h2>
+					<div class="mt-12 grid gap-4 sm:grid-cols-3">
+						@surfaceCard("01", "Listing hygiene", "messy catalogue → ranked fix list", "/listing")
+						@surfaceCard("02", "Ad pre-flight", "creative + landing → what'll get rejected", "/ads")
+						@surfaceCard("03", "Claim screening", "copy → the claims that'll bite you", "/claims")
 					</div>
 				</div>
 			</section>
@@ -72,8 +73,8 @@ templ Landing(hasKey bool) {
 			<section id="try" class="grid-bg">
 				<div class="wrap py-20">
 					<div class="mx-auto max-w-2xl">
-						<span class="label">Try it</span>
-						<h2 class="mt-3 font-display text-4xl font-bold tracking-tight">A typed judgment, live.</h2>
+						<span class="label">Kick the tyres</span>
+						<h2 class="mt-3 font-display text-5xl font-bold tracking-tight">Ask it a yes/no.</h2>
 						<form
 							class="mt-8 grid gap-3"
 							hx-post="/demo/judge"
@@ -84,8 +85,8 @@ templ Landing(hasKey bool) {
 							<textarea name="state" rows="3" class="field" placeholder="Paste text to judge…">Help! My payouts have failed for 3 days.</textarea>
 							<input name="question" class="field" placeholder="Ask a yes/no question…" value="Does this convey urgency?"/>
 							<div class="flex items-center gap-3">
-								<button type="submit" class="btn-brand w-fit">Run judgment →</button>
-								<span id="spin" class="htmx-indicator label">judging…</span>
+								<button type="submit" class="btn-brand w-fit">Score it →</button>
+								<span id="spin" class="htmx-indicator label">scoring…</span>
 							</div>
 						</form>
 						<div id="demo-out" class="mt-6"></div>
@@ -104,37 +105,37 @@ templ heroRow(name, tier, pctStr, barW string) {
 		<span class="hidden h-1.5 w-24 overflow-hidden rounded-full bg-line sm:block">
 			<span class={ "block h-1.5 rounded-full", tierBg(tier), barW }></span>
 		</span>
-		<span class={ "w-10 text-right font-mono text-sm", tierText(tier) }>{ pctStr }</span>
+		<span class={ "w-10 text-right font-mono text-sm font-semibold", tierText(tier) }>{ pctStr }</span>
 	</div>
 }
 
 templ stat(big, small string) {
-	<div class="card p-6">
-		<div class="font-display text-3xl font-bold">{ big }</div>
+	<div class="rounded-xl border border-ink bg-surface p-6">
+		<div class="font-display text-4xl font-bold tracking-tight">{ big }</div>
 		<div class="label mt-1">{ small }</div>
 	</div>
 }
 
 templ surfaceCard(idx, title, desc, href string) {
-	<a href={ templ.SafeURL(href) } class="card group flex flex-col p-6 transition hover:border-brand hover:shadow-sm">
+	<a href={ templ.SafeURL(href) } class="card group flex flex-col p-6 transition hover:-translate-y-1 hover:border-ink hover:shadow-[5px_5px_0_0_#C6F24E]">
 		<div class="flex items-center justify-between">
-			<span class="idx font-mono text-xs text-muted">{ idx }</span>
-			<span class="text-muted transition group-hover:text-brand">→</span>
+			<span class="font-mono text-xs text-muted">{ idx }</span>
+			<span class="transition group-hover:translate-x-1">→</span>
 		</div>
-		<div class="mt-6 font-display text-xl font-semibold">{ title }</div>
+		<div class="mt-8 font-display text-2xl font-bold tracking-tight">{ title }</div>
 		<div class="mt-1 font-mono text-xs text-muted">{ desc }</div>
 	</a>
 }
 
 // DemoResult is the HTMX fragment returned by POST /demo/judge.
 templ DemoResult(question string, prob float64, live, errd bool) {
-	@Panel("result · noul") {
+	@Panel("verdict · noul") {
 		<div class="label mb-2">{ question }</div>
 		if errd {
 			<div class="font-display text-3xl font-bold text-flag">error</div>
 			<p class="mt-2 text-sm text-muted">Jev request failed — check the key and connectivity.</p>
 		} else {
-			<div class={ "font-display text-4xl font-bold", tierText(probTier(prob)) }>{ pct(prob) }</div>
+			<div class={ "font-display text-5xl font-bold tracking-tight", tierText(probTier(prob)) }>{ pct(prob) }</div>
 			<p class="mt-2 text-sm text-muted">{ demoNote(live) }</p>
 		}
 	}

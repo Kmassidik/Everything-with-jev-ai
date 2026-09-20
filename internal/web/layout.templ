@@ -25,7 +25,7 @@ templ Layout(title string) {
 templ Nav() {
 	<header class="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
 		<div class="wrap flex items-center gap-6 py-3">
-			<a href="/" class="font-display text-lg font-bold tracking-tight">jevai<span class="text-brand">.</span></a>
+			<a href="/" class="flex items-center gap-1.5 font-display text-lg font-bold tracking-tight">jevai<span class="inline-block h-2.5 w-2.5 bg-lime"></span></a>
 			<nav class="ml-auto flex items-center gap-6 text-sm">
 				<a href="#surfaces" class="text-muted transition hover:text-ink">Products</a>
 				<a href="#how" class="text-muted transition hover:text-ink">How</a>
@@ -40,8 +40,8 @@ templ Nav() {
 templ Foot() {
 	<footer class="border-t border-line">
 		<div class="wrap flex flex-wrap items-center gap-4 py-8 text-sm text-muted">
-			<span class="font-display font-bold text-ink">jevai<span class="text-brand">.</span></span>
-			<span>calibrated judgment for every item</span>
+			<span class="flex items-center gap-1.5 font-display font-bold text-ink">jevai<span class="inline-block h-2 w-2 bg-lime"></span></span>
+			<span>score every item, sort what matters</span>
 			<span class="ml-auto font-mono text-xs">© 2026 · powered by Jev</span>
 		</div>
 	</footer>
@@ -51,7 +51,7 @@ templ Foot() {
 templ Panel(title string) {
 	<div class="card overflow-hidden">
 		<div class="flex items-center gap-2 border-b border-line bg-paper px-4 py-2.5">
-			<span class="dot bg-brand"></span>
+			<span class="inline-block h-2 w-2 bg-lime"></span>
 			<span class="label">{ title }</span>
 		</div>
 		<div class="p-5">

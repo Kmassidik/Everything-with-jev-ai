@@ -14,22 +14,30 @@
     @apply mx-auto w-full max-w-6xl px-6;
   }
 
-  /* graph-paper grid background */
+  /* graph-paper grid */
   .grid-bg {
     background-image:
-      linear-gradient(to right, rgba(23, 24, 27, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(23, 24, 27, 0.05) 1px, transparent 1px);
-    background-size: 32px 32px;
+      linear-gradient(to right, rgba(20, 20, 15, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(20, 20, 15, 0.045) 1px, transparent 1px);
+    background-size: 34px 34px;
   }
-  .grid-bg-invert {
+  /* grid on the dark/lime block */
+  .grid-ink {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-    background-size: 32px 32px;
+      linear-gradient(to right, rgba(20, 20, 15, 0.10) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(20, 20, 15, 0.10) 1px, transparent 1px);
+    background-size: 34px 34px;
   }
 
   .label {
-    @apply font-mono text-[11px] uppercase tracking-[0.18em] text-muted;
+    @apply font-mono text-[11px] uppercase tracking-[0.2em] text-muted;
+  }
+
+  /* acid-lime marker highlight (lime is used as ink-backed block, never as text) */
+  .mark {
+    @apply bg-lime px-1.5 text-ink;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
   }
 
   .card {
@@ -37,24 +45,23 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition;
   }
   .btn-brand {
-    @apply btn bg-brand text-white hover:opacity-90;
+    @apply btn border border-ink bg-lime text-ink hover:bg-ink hover:text-lime;
   }
   .btn-ghost {
     @apply btn border border-ink text-ink hover:bg-ink hover:text-paper;
   }
 
   .field {
-    @apply w-full rounded-lg border border-line bg-surface p-3 font-mono text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15;
+    @apply w-full rounded-lg border border-line bg-surface p-3 font-mono text-sm outline-none transition focus:border-ink focus:ring-4 focus:ring-lime/40;
   }
 
   .chip {
     @apply inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 font-mono text-[11px];
   }
 
-  /* risk dot */
   .dot {
     @apply inline-block h-2 w-2 rounded-full;
   }
