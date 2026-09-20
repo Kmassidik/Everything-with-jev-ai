@@ -10,33 +10,52 @@
 }
 
 @layer components {
-  /* retro OS window chrome (like typesafe.ai) */
-  .win {
-    @apply border border-ink bg-paper;
-  }
-  .win-bar {
-    @apply flex items-center gap-1.5 border-b border-ink px-2 py-1 font-mono text-[11px] uppercase tracking-wide;
-  }
-  .win-dot {
-    @apply inline-block h-2 w-2 border border-ink;
+  .wrap {
+    @apply mx-auto w-full max-w-6xl px-6;
   }
 
-  /* mono micro-label */
+  /* graph-paper grid background */
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, rgba(23, 24, 27, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(23, 24, 27, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .grid-bg-invert {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
   .label {
-    @apply font-mono text-[11px] uppercase tracking-[0.16em] text-muted;
+    @apply font-mono text-[11px] uppercase tracking-[0.18em] text-muted;
   }
 
-  /* underlined text-link button */
-  .link-btn {
-    @apply font-display font-medium underline decoration-2 underline-offset-4 transition-opacity hover:opacity-60;
+  .card {
+    @apply rounded-xl border border-line bg-surface;
   }
 
-  /* boxed button */
-  .box-btn {
-    @apply inline-flex items-center justify-center border border-ink bg-ink px-4 py-2 font-mono text-sm text-paper transition-colors hover:bg-transparent hover:text-ink;
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition;
+  }
+  .btn-brand {
+    @apply btn bg-brand text-white hover:opacity-90;
+  }
+  .btn-ghost {
+    @apply btn border border-ink text-ink hover:bg-ink hover:text-paper;
   }
 
   .field {
-    @apply w-full border border-ink bg-paper p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-pink;
+    @apply w-full rounded-lg border border-line bg-surface p-3 font-mono text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 font-mono text-[11px];
+  }
+
+  /* risk dot */
+  .dot {
+    @apply inline-block h-2 w-2 rounded-full;
   }
 }

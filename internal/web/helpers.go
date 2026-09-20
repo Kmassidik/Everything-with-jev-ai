@@ -7,31 +7,45 @@ import (
 	"jevai/internal/judge"
 )
 
-func gateUsage(st billing.Status) string {
-	return fmt.Sprintf("Used %d of %d free tokens.", st.Used, st.Allowance)
-}
-
-// small view helpers used by the templ files (same package).
-
+// pct formats a 0..1 probability as a whole percent.
 func pct(f float64) string { return fmt.Sprintf("%.0f%%", f*100) }
 
-func riskClass(f float64) string {
+// probTier buckets a risk/probability into safe / watch / flag.
+func probTier(f float64) string {
 	switch {
 	case f >= 0.66:
-		return "font-bold text-magenta"
+		return "flag"
 	case f >= 0.4:
-		return "font-bold text-ink"
+		return "watch"
 	default:
-		return "text-grass"
+		return "safe"
 	}
 }
 
-func noulClass(p float64) string {
-	if p >= 0.5 {
-		return "text-3xl font-bold text-grass"
+func tierBg(tier string) string {
+	switch tier {
+	case "flag":
+		return "bg-flag"
+	case "watch":
+		return "bg-watch"
+	default:
+		return "bg-safe"
 	}
-	return "text-3xl font-bold text-muted"
 }
+
+func tierText(tier string) string {
+	switch tier {
+	case "flag":
+		return "text-flag"
+	case "watch":
+		return "text-watch"
+	default:
+		return "text-safe"
+	}
+}
+
+// riskClass colors a risk figure by tier.
+func riskClass(f float64) string { return "font-semibold " + tierText(probTier(f)) }
 
 func listingTitle(res judge.Result) string {
 	if res.Listing.Title != "" {
@@ -47,6 +61,10 @@ func reportMeta(r *judge.Report) string {
 	return fmt.Sprintf("%d judged · %d tokens", r.Judgments, r.TokensIn+r.TokensOut)
 }
 
+func itemMeta(r *judge.ItemReport) string {
+	return fmt.Sprintf("%d flagged of %d · %d tokens", r.Flags, len(r.Findings), r.TokensIn+r.TokensOut)
+}
+
 func demoNote(live bool) string {
 	if live {
 		return "Live via Jev."
@@ -54,13 +72,14 @@ func demoNote(live bool) string {
 	return "SAMPLE — set TYPESAFE_API_KEY for a live judgment."
 }
 
-func itemMeta(r *judge.ItemReport) string {
-	return fmt.Sprintf("%d flagged of %d · %d tokens", r.Flags, len(r.Findings), r.TokensIn+r.TokensOut)
+func gateUsage(st billing.Status) string {
+	return fmt.Sprintf("Used %d of %d free tokens.", st.Used, st.Allowance)
 }
 
+// flagText emphasises a flagged finding's label.
 func flagText(flag bool) string {
 	if flag {
-		return "font-bold text-ink"
+		return "font-semibold text-ink"
 	}
 	return "text-muted"
 }

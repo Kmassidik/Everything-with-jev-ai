@@ -10,7 +10,7 @@ templ Layout(title string) {
 			<link rel="preconnect" href="https://fonts.googleapis.com"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
 			<link
-				href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Host+Grotesk:wght@400;500;700;800&display=swap"
+				href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
 				rel="stylesheet"
 			/>
 			<link rel="stylesheet" href="/static/css/app.css"/>
@@ -22,49 +22,39 @@ templ Layout(title string) {
 	</html>
 }
 
-// CropMarks — the corner registration marks from typesafe.ai.
-templ CropMarks() {
-	<div class="pointer-events-none fixed inset-0 z-50">
-		<span class="absolute left-3 top-3 h-3 w-3 border-l border-t border-ink"></span>
-		<span class="absolute right-3 top-3 h-3 w-3 border-r border-t border-ink"></span>
-		<span class="absolute bottom-3 left-3 h-3 w-3 border-b border-l border-ink"></span>
-		<span class="absolute bottom-3 right-3 h-3 w-3 border-b border-r border-ink"></span>
-	</div>
-}
-
 templ Nav() {
-	<header class="flex items-center gap-6 border-b border-ink px-5 py-3 text-sm">
-		<a href="/" class="font-mono text-base font-bold">jevai</a>
-		<nav class="ml-auto flex items-center gap-5">
-			<a href="#surfaces" class="link-btn">Products</a>
-			<a href="#how" class="link-btn">How</a>
-			<a href="#" class="link-btn">Docs</a>
-			<a href="#" class="link-btn">Sign in</a>
-			<a href="#try" class="box-btn">Get started</a>
-		</nav>
+	<header class="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
+		<div class="wrap flex items-center gap-6 py-3">
+			<a href="/" class="font-display text-lg font-bold tracking-tight">jevai<span class="text-brand">.</span></a>
+			<nav class="ml-auto flex items-center gap-6 text-sm">
+				<a href="#surfaces" class="text-muted transition hover:text-ink">Products</a>
+				<a href="#how" class="text-muted transition hover:text-ink">How</a>
+				<a href="#" class="text-muted transition hover:text-ink">Docs</a>
+				<a href="#" class="hidden text-muted transition hover:text-ink sm:inline">Sign in</a>
+				<a href="#try" class="btn-brand">Get started</a>
+			</nav>
+		</div>
 	</header>
 }
 
 templ Foot() {
-	<footer class="border-t border-ink px-5 py-8 font-mono text-xs text-muted">
-		<div class="mx-auto flex max-w-5xl flex-wrap items-center gap-4">
-			<span class="font-bold text-ink">jevai</span>
-			<span>judgment, not chat</span>
-			<span class="ml-auto">© 2026 · powered by Jev</span>
+	<footer class="border-t border-line">
+		<div class="wrap flex flex-wrap items-center gap-4 py-8 text-sm text-muted">
+			<span class="font-display font-bold text-ink">jevai<span class="text-brand">.</span></span>
+			<span>calibrated judgment for every item</span>
+			<span class="ml-auto font-mono text-xs">© 2026 · powered by Jev</span>
 		</div>
 	</footer>
 }
 
-// Window — retro OS window chrome.
-templ Window(title string) {
-	<div class="win">
-		<div class="win-bar">
-			<span class="win-dot"></span>
-			<span class="win-dot"></span>
-			<span class="win-dot"></span>
-			<span class="ml-1">{ title }</span>
+// Panel is a clean titled card used by the report/result fragments.
+templ Panel(title string) {
+	<div class="card overflow-hidden">
+		<div class="flex items-center gap-2 border-b border-line bg-paper px-4 py-2.5">
+			<span class="dot bg-brand"></span>
+			<span class="label">{ title }</span>
 		</div>
-		<div class="p-4">
+		<div class="p-5">
 			{ children... }
 		</div>
 	</div>

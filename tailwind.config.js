@@ -1,25 +1,27 @@
 // Tailwind config (the only JS in the repo — build config, not app code).
-// Palette + type lifted from typesafe.ai: off-white paper, near-black ink,
-// Host Grotesk display, Fragment Mono for labels, hot-pink accent.
+// Original jevai palette: warm paper, indigo brand, a green→amber→red risk scale.
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./internal/web/**/*.templ"],
+  // scan .go too — some risk-color classes are built in helpers.go, not literal in templ
+  content: ["./internal/web/**/*.templ", "./internal/web/**/*.go"],
   theme: {
     extend: {
       colors: {
-        paper: "#FEFEFE",
-        ink: "#1E1E1E",
-        line: "#E5E5E5",
-        muted: "#858585",
-        pink: "#F386A1",
-        magenta: "#D45BB6",
-        grass: "#03AA5C",
-        teal: "#09AEA1",
+        paper: "#FBFBF9",
+        surface: "#FFFFFF",
+        ink: "#17181B",
+        line: "#E6E6E1",
+        muted: "#6B6B66",
+        brand: "#5B54E6",
+        brandsoft: "#EDECFC",
+        safe: "#10B981",
+        watch: "#F59E0B",
+        flag: "#EF4444",
       },
       fontFamily: {
-        display: ["'Host Grotesk'", "Inter", "system-ui", "sans-serif"],
-        sans: ["'Host Grotesk'", "Inter", "system-ui", "sans-serif"],
-        mono: ["'Fragment Mono'", "'JetBrains Mono'", "ui-monospace", "monospace"],
+        display: ["'Space Grotesk'", "system-ui", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
       },
     },
   },

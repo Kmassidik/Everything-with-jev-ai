@@ -1,100 +1,95 @@
 package web
 
 templ Landing(hasKey bool) {
-	@Layout("jevai — judgment, not chat") {
-		@CropMarks()
+	@Layout("jevai — calibrated judgment for every item") {
 		@Nav()
 		<main>
 			<!-- hero -->
-			<section class="mx-auto max-w-5xl px-5 pb-12 pt-20 text-center">
-				<p class="label mb-6">Introducing jevai ···· intelligence beyond chat</p>
-				<h1 class="font-display text-[clamp(2.75rem,8vw,7rem)] font-extrabold leading-[0.92] tracking-tight">
-					Judge Every Row.<br/>Calibrated.<br/>In Milliseconds.
-				</h1>
-				<p class="mx-auto mt-8 max-w-xl text-lg text-ink/70">
-					A typed judgment for every item in your stream — not a chatbot. Powered by Jev:
-					one call, typed answers, calibrated confidence, ~300&nbsp;ms.
-				</p>
-				<div class="mt-10 flex items-center justify-center gap-8">
-					<a href="#try" class="link-btn text-xl">Get started</a>
-					<a href="#how" class="link-btn text-xl">See how</a>
+			<section class="grid-bg border-b border-line">
+				<div class="wrap grid items-center gap-12 py-20 lg:grid-cols-2">
+					<div>
+						<span class="chip"><span class="dot bg-brand"></span> Calibrated judgment API</span>
+						<h1 class="mt-6 font-display text-5xl font-bold leading-[1.04] tracking-tight sm:text-6xl">
+							Judge every item.<br/>Know the <span class="text-brand">confidence.</span>
+						</h1>
+						<p class="mt-5 max-w-md text-lg text-muted">
+							A typed verdict on every row, listing and ad — with a calibrated probability,
+							in ~300&nbsp;ms. Not a chatbot: it tells you when it isn't sure.
+						</p>
+						<div class="mt-8 flex flex-wrap items-center gap-3">
+							<a href="#try" class="btn-brand">Start free</a>
+							<a href="#how" class="btn-ghost">See how it works</a>
+						</div>
+						<p class="label mt-6">$0.00004 / judgment · powered by Jev</p>
+					</div>
+					<!-- hero visual: a live audit, sorted worst-first -->
+					<div class="card overflow-hidden shadow-sm">
+						<div class="flex items-center justify-between border-b border-line bg-paper px-4 py-2.5">
+							<span class="label">live · listing audit</span>
+							<span class="label">risk</span>
+						</div>
+						<div class="divide-y divide-line">
+							@heroRow("MIRACLE CURE PILLS", "flag", "91%", "w-[91%]")
+							@heroRow("Nike Air Max REPLICA 1:1", "flag", "86%", "w-[86%]")
+							@heroRow("iPhone 15 Case — clear", "watch", "44%", "w-[44%]")
+							@heroRow("Organic Green Tea 100g", "safe", "8%", "w-[8%]")
+						</div>
+						<div class="label border-t border-line px-4 py-2.5">4 judged · 132 tokens · sorted worst-first</div>
+					</div>
 				</div>
 			</section>
-			<!-- news window -->
-			<section class="mx-auto max-w-md px-5 pb-20">
-				@Window("jevai news · Sep 2026") {
-					<div class="flex items-center justify-between gap-4 font-mono text-xs">
-						<span>Judgment as code — now on your Mac.</span>
-						<a href="#" class="underline underline-offset-2">Read more</a>
-					</div>
-				}
-			</section>
-			<!-- how: pink section with benchmark window -->
-			<section id="how" class="border-y border-ink bg-pink">
-				<div class="mx-auto max-w-5xl px-5 py-20">
-					<div class="mx-auto max-w-lg">
-						@Window("JEV.OS · speed × cost") {
-							<table class="w-full border-collapse font-mono text-xs">
-								<tbody>
-									<tr class="border-b border-ink/20">
-										<td class="py-1.5">Jev (TypeSafe)</td>
-										<td class="text-right">193.6×</td>
-										<td class="text-right">$0.39</td>
-									</tr>
-									<tr class="border-b border-ink/20">
-										<td class="py-1.5">Claude Opus 5</td>
-										<td class="text-right">2.1×</td>
-										<td class="text-right">$176.05</td>
-									</tr>
-									<tr class="border-b border-ink/20">
-										<td class="py-1.5">Claude Sonnet 5</td>
-										<td class="text-right">1.0×</td>
-										<td class="text-right">$117.38</td>
-									</tr>
-									<tr>
-										<td class="py-1.5">GPT-5.6-Luna</td>
-										<td class="text-right">6.0×</td>
-										<td class="text-right">$3.31</td>
-									</tr>
-								</tbody>
-							</table>
-						}
-					</div>
-					<h2 class="mt-14 font-display text-[clamp(2.25rem,6vw,5rem)] font-extrabold leading-[0.92] tracking-tight">
-						Judge Every Item.<br/>Not A Sample.
+			<!-- how -->
+			<section id="how" class="border-b border-line">
+				<div class="wrap py-20">
+					<span class="label">Why Jev, not an LLM</span>
+					<h2 class="mt-3 max-w-2xl font-display text-4xl font-bold tracking-tight">
+						Judge every item — not a sample.
 					</h2>
-					<p class="mt-5 max-w-xl text-ink/80">
-						At $0.00004 and ~300&nbsp;ms per judgment you can look at every row, listing and
-						ad — typed, calibrated, and it tells you when it doesn't know.
+					<p class="mt-4 max-w-2xl text-muted">
+						A judgment used to cost cents and seconds, so you sampled. At Jev prices you look at
+						all of it — typed, calibrated, and honest about uncertainty.
 					</p>
+					<div class="mt-10 grid gap-4 sm:grid-cols-3">
+						@stat("~300 ms", "per judgment")
+						@stat("$0.00004", "per item")
+						@stat("typed", "never off-schema")
+					</div>
 				</div>
 			</section>
 			<!-- surfaces -->
-			<section id="surfaces" class="mx-auto max-w-5xl px-5 py-20">
-				<p class="label">Surfaces</p>
-				<h3 class="mt-2 font-display text-3xl font-bold">One engine. Every judged workflow.</h3>
-				<div class="mt-8 grid gap-4 sm:grid-cols-3">
-					@surfaceCard("Listing hygiene", "CSV of SKUs → ranked fix list", "grass", "/listing")
-					@surfaceCard("Ad pre-flight", "creative + landing → risk report", "teal", "/ads")
-					@surfaceCard("Claim screening", "copy + rules → flagged claims", "magenta", "/claims")
+			<section id="surfaces" class="border-b border-line">
+				<div class="wrap py-20">
+					<span class="label">Surfaces</span>
+					<h2 class="mt-3 font-display text-4xl font-bold tracking-tight">One engine. Every judged workflow.</h2>
+					<div class="mt-10 grid gap-4 sm:grid-cols-3">
+						@surfaceCard("01", "Listing hygiene", "CSV of SKUs → ranked fix list", "/listing")
+						@surfaceCard("02", "Ad pre-flight", "creative + landing → risk report", "/ads")
+						@surfaceCard("03", "Claim screening", "copy + rules → flagged claims", "/claims")
+					</div>
 				</div>
 			</section>
 			<!-- try (HTMX demo) -->
-			<section id="try" class="border-t border-ink bg-ink text-paper">
-				<div class="mx-auto max-w-3xl px-5 py-20">
-					<p class="label text-paper/60">Try it</p>
-					<h3 class="mt-2 font-display text-3xl font-bold">A typed judgment, live.</h3>
-					<form
-						class="mt-6 grid gap-3"
-						hx-post="/demo/judge"
-						hx-target="#demo-out"
-						hx-swap="innerHTML"
-					>
-						<textarea name="state" rows="3" class="field text-ink" placeholder="Paste text to judge…">Help! My payouts have failed for 3 days.</textarea>
-						<input name="question" class="field text-ink" placeholder="Ask a yes/no question…" value="Does this convey urgency?"/>
-						<button type="submit" class="box-btn w-fit bg-pink text-ink hover:bg-paper">Run judgment →</button>
-					</form>
-					<div id="demo-out" class="mt-6"></div>
+			<section id="try" class="grid-bg">
+				<div class="wrap py-20">
+					<div class="mx-auto max-w-2xl">
+						<span class="label">Try it</span>
+						<h2 class="mt-3 font-display text-4xl font-bold tracking-tight">A typed judgment, live.</h2>
+						<form
+							class="mt-8 grid gap-3"
+							hx-post="/demo/judge"
+							hx-target="#demo-out"
+							hx-swap="innerHTML"
+							hx-indicator="#spin"
+						>
+							<textarea name="state" rows="3" class="field" placeholder="Paste text to judge…">Help! My payouts have failed for 3 days.</textarea>
+							<input name="question" class="field" placeholder="Ask a yes/no question…" value="Does this convey urgency?"/>
+							<div class="flex items-center gap-3">
+								<button type="submit" class="btn-brand w-fit">Run judgment →</button>
+								<span id="spin" class="htmx-indicator label">judging…</span>
+							</div>
+						</form>
+						<div id="demo-out" class="mt-6"></div>
+					</div>
 				</div>
 			</section>
 		</main>
@@ -102,28 +97,45 @@ templ Landing(hasKey bool) {
 	}
 }
 
-templ surfaceCard(title, desc, accent, href string) {
-	<a href={ templ.SafeURL(href) } class="win block transition-transform hover:-translate-y-0.5">
-		<div class="win-bar">
-			<span class={ "win-dot", templ.KV("bg-grass", accent == "grass"), templ.KV("bg-teal", accent == "teal"), templ.KV("bg-magenta", accent == "magenta") }></span>
-			<span>{ title }</span>
+templ heroRow(name, tier, pctStr, barW string) {
+	<div class="flex items-center gap-3 px-4 py-3">
+		<span class={ "dot", tierBg(tier) }></span>
+		<span class="min-w-0 flex-1 truncate font-mono text-sm">{ name }</span>
+		<span class="hidden h-1.5 w-24 overflow-hidden rounded-full bg-line sm:block">
+			<span class={ "block h-1.5 rounded-full", tierBg(tier), barW }></span>
+		</span>
+		<span class={ "w-10 text-right font-mono text-sm", tierText(tier) }>{ pctStr }</span>
+	</div>
+}
+
+templ stat(big, small string) {
+	<div class="card p-6">
+		<div class="font-display text-3xl font-bold">{ big }</div>
+		<div class="label mt-1">{ small }</div>
+	</div>
+}
+
+templ surfaceCard(idx, title, desc, href string) {
+	<a href={ templ.SafeURL(href) } class="card group flex flex-col p-6 transition hover:border-brand hover:shadow-sm">
+		<div class="flex items-center justify-between">
+			<span class="idx font-mono text-xs text-muted">{ idx }</span>
+			<span class="text-muted transition group-hover:text-brand">→</span>
 		</div>
-		<div class="p-4 font-mono text-xs text-ink/70">{ desc }</div>
+		<div class="mt-6 font-display text-xl font-semibold">{ title }</div>
+		<div class="mt-1 font-mono text-xs text-muted">{ desc }</div>
 	</a>
 }
 
 // DemoResult is the HTMX fragment returned by POST /demo/judge.
 templ DemoResult(question string, prob float64, live, errd bool) {
-	@Window("result · noul") {
-		<div class="font-mono text-xs text-ink">
-			<div class="label mb-2">{ question }</div>
-			if errd {
-				<div class="text-3xl font-bold text-magenta">error</div>
-				<p class="mt-2 text-ink/60">Jev request failed — check the key and connectivity.</p>
-			} else {
-				<div class={ noulClass(prob) }>{ pct(prob) }</div>
-				<p class="mt-2 text-ink/60">{ demoNote(live) }</p>
-			}
-		</div>
+	@Panel("result · noul") {
+		<div class="label mb-2">{ question }</div>
+		if errd {
+			<div class="font-display text-3xl font-bold text-flag">error</div>
+			<p class="mt-2 text-sm text-muted">Jev request failed — check the key and connectivity.</p>
+		} else {
+			<div class={ "font-display text-4xl font-bold", tierText(probTier(prob)) }>{ pct(prob) }</div>
+			<p class="mt-2 text-sm text-muted">{ demoNote(live) }</p>
+		}
 	}
 }
