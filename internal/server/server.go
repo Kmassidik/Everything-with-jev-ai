@@ -87,7 +87,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /ads", s.adsPage)
 	s.mux.HandleFunc("POST /ads/audit", s.adsAudit)
 	s.mux.HandleFunc("GET /claims", s.claimsPage)
-	s.mux.HandleFunc("POST /claims/screen", s.claimsScreen)
+	s.mux.HandleFunc("POST /claims/audit", s.claimsAudit)
 }
 
 // ---- session helpers ----

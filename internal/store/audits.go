@@ -18,7 +18,7 @@ import (
 
 type Audits struct{ db *sql.DB }
 
-const auditSchema = `
+const auditTable = `
 CREATE TABLE IF NOT EXISTS audits (
     id         TEXT PRIMARY KEY,
     user_id    INTEGER NOT NULL DEFAULT 0,
@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS audits (
     flagged    INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL,
     report     TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_audits_user ON audits(user_id, created_at);`
+);`
 
 // AuditMeta is a history-row summary (no full report).
 type AuditMeta struct {
@@ -46,17 +45,23 @@ func Open(path string) (*Audits, error) {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	if _, err := db.ExecContext(context.Background(), auditSchema); err != nil {
+	ctx := context.Background()
+	if _, err := db.ExecContext(ctx, auditTable); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("migrate: %w", err)
 	}
-	// migrate older tables that predate the newer columns (errors ignored if present)
+	// add columns to older tables that predate them (errors ignored if already present),
+	// BEFORE creating any index that references them.
 	for _, col := range []string{
 		"ALTER TABLE audits ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0",
 		"ALTER TABLE audits ADD COLUMN items INTEGER NOT NULL DEFAULT 0",
 		"ALTER TABLE audits ADD COLUMN flagged INTEGER NOT NULL DEFAULT 0",
 	} {
-		_, _ = db.ExecContext(context.Background(), col)
+		_, _ = db.ExecContext(ctx, col)
+	}
+	if _, err := db.ExecContext(ctx, `CREATE INDEX IF NOT EXISTS idx_audits_user ON audits(user_id, created_at)`); err != nil {
+		_ = db.Close()
+		return nil, fmt.Errorf("index: %w", err)
 	}
 	return &Audits{db: db}, nil
 }

@@ -199,6 +199,40 @@ func ParseAdsCSV(r io.Reader, max int) ([]Item, error) {
 	return out, nil
 }
 
+// ParseClaimsCSV reads copy to screen from a CSV. Recognised columns: copy
+// (required), category.
+func ParseClaimsCSV(r io.Reader, max int) ([]Item, error) {
+	rows, idx, err := readCSV(r, max, []string{"copy", "category"})
+	if err != nil {
+		return nil, err
+	}
+	if idx["copy"] < 0 {
+		return nil, errors.New("csv needs a 'copy' column")
+	}
+	var out []Item
+	for _, rec := range rows {
+		get := colGetter(rec.fields, idx)
+		copy := get("copy")
+		if copy == "" {
+			continue
+		}
+		cat := get("category")
+		if cat == "" {
+			cat = "general"
+		}
+		out = append(out, Item{
+			Row:   rec.row,
+			Title: truncate(copy, 60),
+			State: map[string]string{"copy": copy, "category": cat},
+			Cols:  []Field{{"category", cat}, {"copy", copy}},
+		})
+	}
+	if len(out) == 0 {
+		return nil, errors.New("no copy found in csv")
+	}
+	return out, nil
+}
+
 // --- shared CSV helpers ---
 
 type csvRow struct {

@@ -75,13 +75,11 @@ func packTitle(pack string) string {
 		return "Ad pre-flight"
 	case "listing-hygiene":
 		return "Listing audit"
+	case "claim-screening":
+		return "Claim screening"
 	default:
 		return "Audit"
 	}
-}
-
-func itemMeta(r *judge.ItemReport) string {
-	return fmt.Sprintf("%d flagged of %d · %d tokens", r.Flags, len(r.Findings), r.TokensIn+r.TokensOut)
 }
 
 func demoNote(live bool) string {
@@ -93,12 +91,4 @@ func demoNote(live bool) string {
 
 func gateUsage(st billing.Status) string {
 	return fmt.Sprintf("Used %d of %d free tokens.", st.Used, st.Allowance)
-}
-
-// flagText emphasises a flagged finding's label.
-func flagText(flag bool) string {
-	if flag {
-		return "font-semibold text-ink"
-	}
-	return "text-muted"
 }

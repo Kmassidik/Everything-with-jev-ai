@@ -11,29 +11,12 @@ templ Claims(user *account.User) {
 					<span class="label">Surface · claim screening</span>
 					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">Screen every claim.</h1>
 					<p class="mt-4 max-w-xl text-muted">
-						Paste a listing or ad copy. Every regulated-marketing rule is checked at once —
-						disease claims, guaranteed results, asserted certifications, restricted ingredients.
+						Upload a CSV of copy — listings, ads, packaging. Every piece is checked for
+						disease claims, guaranteed results, asserted certifications and restricted
+						ingredients. Ranked worst-first, with a CSV to act on.
 					</p>
-					<form
-						class="mt-8 grid gap-3"
-						hx-post="/claims/screen"
-						hx-target="#screen-out"
-						hx-swap="innerHTML"
-						hx-indicator="#spin"
-					>
-						<textarea name="copy" rows="5" required class="field" placeholder="Paste the marketing copy…"></textarea>
-						<select name="category" class="field">
-							<option value="general">General</option>
-							<option value="health">Health / Supplement</option>
-							<option value="cosmetics">Cosmetics</option>
-							<option value="food">Food &amp; Beverage</option>
-						</select>
-						<div class="flex items-center gap-3">
-							<button type="submit" class="btn-brand w-fit">Screen copy →</button>
-							<span id="spin" class="htmx-indicator label">screening…</span>
-						</div>
-					</form>
-					<div id="screen-out" class="mt-10"></div>
+					@uploadForm("/claims/audit", "copy · category · max 200 rows")
+					<div id="report" class="mt-10"></div>
 					<p class="label mt-10 max-w-2xl leading-relaxed">
 						Screening aid — not legal advice. Rules are illustrative and UNVERIFIED; check BPOM /
 						BPJPH primary sources before acting.
