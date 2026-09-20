@@ -13,6 +13,7 @@ import (
 	"jevai/internal/billing"
 	"jevai/internal/jev"
 	"jevai/internal/ledger"
+	"jevai/internal/store"
 	"jevai/internal/web"
 )
 
@@ -30,17 +31,18 @@ type Server struct {
 	log    *slog.Logger
 	judge  jev.Judge
 	ledger ledger.Ledger
+	audits *store.Audits
 	plan   billing.Plan
 	mux    *http.ServeMux
 }
 
 // New builds the router with its dependencies injected.
-func New(cfg Config, log *slog.Logger, j jev.Judge, l ledger.Ledger) *Server {
+func New(cfg Config, log *slog.Logger, j jev.Judge, l ledger.Ledger, a *store.Audits) *Server {
 	plan := billing.Free
 	if cfg.TrialTokens >= 0 {
 		plan.TrialTokens = cfg.TrialTokens
 	}
-	s := &Server{cfg: cfg, log: log, judge: j, ledger: l, plan: plan, mux: http.NewServeMux()}
+	s := &Server{cfg: cfg, log: log, judge: j, ledger: l, audits: a, plan: plan, mux: http.NewServeMux()}
 	s.routes()
 	return s
 }
@@ -72,6 +74,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /demo/judge", s.demoJudge)
 	s.mux.HandleFunc("GET /listing", s.listingPage)
 	s.mux.HandleFunc("POST /listing/audit", s.listingAudit)
+	s.mux.HandleFunc("GET /a/{id}", s.auditPage)
+	s.mux.HandleFunc("GET /a/{id}/csv", s.auditCSV)
 	s.mux.HandleFunc("GET /claims", s.claimsPage)
 	s.mux.HandleFunc("POST /claims/screen", s.claimsScreen)
 	s.mux.HandleFunc("GET /ads", s.adsPage)

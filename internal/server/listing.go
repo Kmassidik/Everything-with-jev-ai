@@ -2,7 +2,11 @@ package server
 
 import (
 	"context"
+	"encoding/csv"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"jevai/internal/judge"
@@ -64,5 +68,57 @@ func (s *Server) listingAudit(w http.ResponseWriter, r *http.Request) {
 	if err := s.ledger.Record(r.Context(), s.user(r), report.TokensIn, report.TokensOut, report.Judgments); err != nil {
 		s.log.Warn("ledger record failed", "err", err)
 	}
-	_ = web.ListingReport(report).Render(r.Context(), w)
+
+	// persist so the result is a shareable artifact (permalink + CSV), not throwaway
+	id, err := s.audits.Save(r.Context(), report)
+	if err != nil {
+		s.log.Warn("save audit failed", "err", err)
+	}
+	_ = web.ListingReport(report, id).Render(r.Context(), w)
+}
+
+// auditPage renders a saved audit at its permalink.
+func (s *Server) auditPage(w http.ResponseWriter, r *http.Request) {
+	report, at, err := s.audits.Get(r.Context(), r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		_ = web.AuditNotFound().Render(r.Context(), w)
+		return
+	}
+	_ = web.AuditPage(report, r.PathValue("id"), at).Render(r.Context(), w)
+}
+
+// auditCSV streams a saved audit as a CSV of the flagged rows.
+func (s *Server) auditCSV(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	report, _, err := s.audits.Get(r.Context(), id)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"listing-audit-"+id+".csv\"")
+
+	cw := csv.NewWriter(w)
+	defer cw.Flush()
+	_ = cw.Write([]string{"row", "sku", "title", "category", "price", "risk_pct", "flagged_issues", "detail"})
+	for _, res := range report.Results {
+		if res.Err != "" {
+			_ = cw.Write([]string{strconv.Itoa(res.Listing.Row), res.Listing.SKU, res.Listing.Title, res.Listing.Category, res.Listing.Price, "", "error: " + res.Err, ""})
+			continue
+		}
+		var flagged, detail []string
+		for _, f := range res.Findings {
+			detail = append(detail, fmt.Sprintf("%s=%.0f%%", f.Key, f.Prob*100))
+			if f.Flag {
+				flagged = append(flagged, f.Label)
+			}
+		}
+		_ = cw.Write([]string{
+			strconv.Itoa(res.Listing.Row), res.Listing.SKU, res.Listing.Title,
+			res.Listing.Category, res.Listing.Price,
+			fmt.Sprintf("%.0f", res.Risk*100),
+			strings.Join(flagged, "; "), strings.Join(detail, " "),
+		})
+	}
 }

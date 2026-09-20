@@ -16,6 +16,7 @@ import (
 	"jevai/internal/jev"
 	"jevai/internal/ledger"
 	"jevai/internal/server"
+	"jevai/internal/store"
 )
 
 func main() {
@@ -34,9 +35,11 @@ func main() {
 		judge = jev.New(cfg.JevKey, cfg.JevModel)
 	}
 
+	dbPath := env("JEVAI_DB", "jevai.db")
+
 	// Ledger: durable SQLite, falling back to in-memory if the file can't be opened.
 	var led ledger.Ledger
-	if sq, err := ledger.OpenSQLite(env("JEVAI_DB", "jevai.db")); err != nil {
+	if sq, err := ledger.OpenSQLite(dbPath); err != nil {
 		log.Warn("sqlite unavailable — using in-memory ledger", "err", err)
 		led = ledger.NewMemory()
 	} else {
@@ -44,9 +47,17 @@ func main() {
 	}
 	defer func() { _ = led.Close() }()
 
+	// Audit store: saved, shareable results (permalink + CSV). Required for the product.
+	audits, err := store.Open(dbPath)
+	if err != nil {
+		log.Error("audit store unavailable", "err", err)
+		os.Exit(1)
+	}
+	defer func() { _ = audits.Close() }()
+
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           server.New(cfg, log, judge, led).Handler(),
+		Handler:           server.New(cfg, log, judge, led, audits).Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
