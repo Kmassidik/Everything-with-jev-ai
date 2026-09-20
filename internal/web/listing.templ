@@ -35,7 +35,7 @@ templ Listing() {
 	}
 }
 
-templ ListingError(msg string) {
+templ ErrorBox(msg string) {
 	@Window("error") {
 		<p class="font-mono text-xs text-magenta">{ msg }</p>
 	}
@@ -71,7 +71,7 @@ templ ListingReport(rep *judge.Report) {
 								} else {
 									for _, f := range res.Findings {
 										if f.Flag {
-											<span class="mr-1 mb-1 inline-block border border-ink px-1">{ f.Key }</span>
+											<span class="mr-1 mb-1 inline-block border border-ink px-1">{ f.Label }</span>
 										}
 									}
 								}

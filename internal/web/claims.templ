@@ -1,0 +1,70 @@
+package web
+
+import "jevai/internal/judge"
+
+templ Claims() {
+	@Layout("jevai — claim screening") {
+		@CropMarks()
+		@Nav()
+		<main class="mx-auto max-w-4xl px-5 py-16">
+			<p class="label">Surface · claim screening</p>
+			<h1 class="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Screen every claim.</h1>
+			<p class="mt-4 max-w-xl text-ink/70">
+				Paste a listing or ad copy. Every regulated-marketing rule is checked at once —
+				disease claims, guaranteed results, asserted certifications, restricted ingredients.
+			</p>
+			<form
+				class="mt-8 grid gap-3"
+				hx-post="/claims/screen"
+				hx-target="#screen-out"
+				hx-swap="innerHTML"
+				hx-indicator="#spin"
+			>
+				<textarea name="copy" rows="5" required class="field" placeholder="Paste the marketing copy…"></textarea>
+				<select name="category" class="field">
+					<option value="general">General</option>
+					<option value="health">Health / Supplement</option>
+					<option value="cosmetics">Cosmetics</option>
+					<option value="food">Food &amp; Beverage</option>
+				</select>
+				<div class="flex items-center gap-3">
+					<button type="submit" class="box-btn w-fit">Screen copy →</button>
+					<span id="spin" class="htmx-indicator label">screening…</span>
+				</div>
+			</form>
+			<div id="screen-out" class="mt-10"></div>
+			<p class="label mt-10 max-w-2xl leading-relaxed">
+				Screening aid — not legal advice. Rules are illustrative and UNVERIFIED; check BPOM /
+				BPJPH primary sources before acting.
+			</p>
+		</main>
+		@Foot()
+	}
+}
+
+templ ClaimReport(rep *judge.ClaimReport) {
+	@Window("result · claim-screening") {
+		<div class="mb-3 font-mono text-xs text-muted">category: { rep.Category }</div>
+		<ul class="grid gap-2">
+			for _, f := range rep.Findings {
+				<li class="flex items-center justify-between gap-4 border-b border-ink/10 pb-2 font-mono text-xs">
+					<span class="flex items-center gap-2">
+						if f.Flag {
+							<span class="inline-block h-2 w-2 bg-magenta"></span>
+						} else {
+							<span class="inline-block h-2 w-2 border border-ink/30"></span>
+						}
+						<span class={ flagText(f.Flag) }>{ f.Label }</span>
+					</span>
+					<span class={ riskClass(f.Prob) }>{ pct(f.Prob) }</span>
+				</li>
+			}
+		</ul>
+		<p class="label mt-3">
+			{ claimMeta(rep) }
+			if rep.Sample {
+				<span class="text-magenta"> · SAMPLE — set TYPESAFE_API_KEY for live</span>
+			}
+		</p>
+	}
+}

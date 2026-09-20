@@ -49,6 +49,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /demo/judge", s.demoJudge)
 	s.mux.HandleFunc("GET /listing", s.listingPage)
 	s.mux.HandleFunc("POST /listing/audit", s.listingAudit)
+	s.mux.HandleFunc("GET /claims", s.claimsPage)
+	s.mux.HandleFunc("POST /claims/screen", s.claimsScreen)
 }
 
 // user identifies the caller for metering. Real auth arrives with the payment gate;

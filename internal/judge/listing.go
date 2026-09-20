@@ -90,9 +90,10 @@ func columnIndex(header []string) map[string]int {
 
 // Finding is one check's result for one listing.
 type Finding struct {
-	Key  string
-	Prob float64
-	Flag bool
+	Key   string
+	Label string
+	Prob  float64
+	Flag  bool
 }
 
 // Result is a listing plus its findings and overall risk (0..1, higher = worse).
@@ -160,7 +161,7 @@ func Audit(ctx context.Context, j jev.Judge, pack Pack, items []Listing, concurr
 				}
 				num += c.Weight * contrib
 				den += c.Weight
-				res.Findings = append(res.Findings, Finding{Key: c.Key, Prob: p, Flag: contrib >= flagThreshold})
+				res.Findings = append(res.Findings, Finding{Key: c.Key, Label: c.Label, Prob: p, Flag: contrib >= flagThreshold})
 			}
 			if den > 0 {
 				res.Risk = num / den

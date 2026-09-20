@@ -1,5 +1,5 @@
 // Package judge holds the domain: question-packs (the rules for a surface) and the
-// logic that runs a pack over many items and ranks the result.
+// logic that runs a pack over items and ranks the result.
 package judge
 
 import "jevai/internal/jev"
@@ -7,6 +7,7 @@ import "jevai/internal/jev"
 // Check is one weighted, atomic question plus how its answer maps to risk.
 type Check struct {
 	Key         string
+	Label       string // human label for the UI
 	Question    jev.Question
 	Weight      float64
 	BadWhenTrue bool // true: a high probability means risk; false: a low probability means risk
@@ -32,21 +33,50 @@ func (p Pack) questions() map[string]jev.Question {
 var ListingHygiene = Pack{
 	Name: "listing-hygiene",
 	Checks: []Check{
-		{Key: "title_mismatch", Weight: 1.0, BadWhenTrue: true, Question: jev.Question{
+		{Key: "title_mismatch", Label: "Title–description mismatch", Weight: 1.0, BadWhenTrue: true, Question: jev.Question{
 			Type:         "noul",
 			Instructions: "Does the title describe a DIFFERENT product than the description? Answer true only if they clearly conflict.",
 		}},
-		{Key: "wrong_category", Weight: 0.8, BadWhenTrue: true, Question: jev.Question{
+		{Key: "wrong_category", Label: "Wrong category", Weight: 0.8, BadWhenTrue: true, Question: jev.Question{
 			Type:         "noul",
 			Instructions: "Is the stated category wrong for the product described?",
 		}},
-		{Key: "prohibited_claim", Weight: 1.2, BadWhenTrue: true, Question: jev.Question{
+		{Key: "prohibited_claim", Label: "Prohibited claim", Weight: 1.2, BadWhenTrue: true, Question: jev.Question{
 			Type:         "noul",
 			Instructions: "Does the copy make a prohibited or overreaching claim (medical cure, guaranteed results, counterfeit or brand misuse)?",
 		}},
-		{Key: "missing_detail", Weight: 0.5, BadWhenTrue: true, Question: jev.Question{
+		{Key: "missing_detail", Label: "Missing detail", Weight: 0.5, BadWhenTrue: true, Question: jev.Question{
 			Type:         "noul",
 			Instructions: "Is the description missing basic detail a buyer needs (size, material, quantity, or condition)?",
+		}},
+	},
+}
+
+// ClaimScreening flags regulated-marketing risks in a piece of copy. The rules are
+// ILLUSTRATIVE and UNVERIFIED — the UI states this and that it is not legal advice
+// (PRD §7 / workspace provenance rule). `category` is provided in the state for context.
+var ClaimScreening = Pack{
+	Name: "claim-screening",
+	Checks: []Check{
+		{Key: "disease_claim", Label: "Treats/cures a disease", Weight: 1.3, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `copy` claim to treat, cure, or prevent a disease or medical condition?",
+		}},
+		{Key: "guaranteed_result", Label: "Guaranteed / unsubstantiated result", Weight: 1.0, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `copy` promise a guaranteed or unsubstantiated result (e.g. 'lose 10kg in a week', '100% effective')?",
+		}},
+		{Key: "certification_asserted", Label: "Asserts a certification", Weight: 0.9, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `copy` assert an official certification as fact (halal, BPOM-registered, clinically proven, doctor-approved)?",
+		}},
+		{Key: "restricted_ingredient", Label: "Restricted ingredient", Weight: 1.1, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `copy` mention an ingredient commonly restricted or banned in this product category?",
+		}},
+		{Key: "misleading_comparison", Label: "Misleading comparison", Weight: 0.7, BadWhenTrue: true, Question: jev.Question{
+			Type:         "noul",
+			Instructions: "Does `copy` make a misleading superiority, 'best', or before/after claim it cannot substantiate?",
 		}},
 	},
 }
