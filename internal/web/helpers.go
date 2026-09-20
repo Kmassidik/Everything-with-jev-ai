@@ -3,8 +3,13 @@ package web
 import (
 	"fmt"
 
+	"jevai/internal/billing"
 	"jevai/internal/judge"
 )
+
+func gateUsage(st billing.Status) string {
+	return fmt.Sprintf("Used %d of %d free tokens.", st.Used, st.Allowance)
+}
 
 // small view helpers used by the templ files (same package).
 

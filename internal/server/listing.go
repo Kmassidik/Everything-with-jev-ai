@@ -47,6 +47,9 @@ func (s *Server) listingAudit(w http.ResponseWriter, r *http.Request) {
 		_ = web.ErrorBox(err.Error()).Render(r.Context(), w)
 		return
 	}
+	if s.gated(w, r) {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), auditTimeout)
 	defer cancel()

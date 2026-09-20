@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -21,9 +22,10 @@ func main() {
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	cfg := server.Config{
-		Port:     env("PORT", "8080"),
-		JevModel: env("JEV_MODEL", "jev-latest"),
-		JevKey:   os.Getenv("TYPESAFE_API_KEY"),
+		Port:        env("PORT", "8080"),
+		JevModel:    env("JEV_MODEL", "jev-latest"),
+		JevKey:      os.Getenv("TYPESAFE_API_KEY"),
+		TrialTokens: envInt("JEVAI_TRIAL_TOKENS", 1_000_000),
 	}
 
 	// Judge: live client when a key is set, otherwise the deterministic sample Mock.
@@ -69,6 +71,15 @@ func main() {
 func env(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return fallback
+}
+
+func envInt(key string, fallback int) int {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
 	}
 	return fallback
 }

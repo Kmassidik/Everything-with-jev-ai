@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"jevai/internal/billing"
 	"jevai/internal/jev"
 	"jevai/internal/ledger"
 	"jevai/internal/web"
@@ -17,9 +18,10 @@ import (
 
 // Config is the engine's runtime configuration (secrets come from the environment).
 type Config struct {
-	Port     string
-	JevModel string
-	JevKey   string
+	Port        string
+	JevModel    string
+	JevKey      string
+	TrialTokens int // free-trial token allowance
 }
 
 // Server holds the handler dependencies.
@@ -28,14 +30,35 @@ type Server struct {
 	log    *slog.Logger
 	judge  jev.Judge
 	ledger ledger.Ledger
+	plan   billing.Plan
 	mux    *http.ServeMux
 }
 
 // New builds the router with its dependencies injected.
 func New(cfg Config, log *slog.Logger, j jev.Judge, l ledger.Ledger) *Server {
-	s := &Server{cfg: cfg, log: log, judge: j, ledger: l, mux: http.NewServeMux()}
+	plan := billing.Free
+	if cfg.TrialTokens >= 0 {
+		plan.TrialTokens = cfg.TrialTokens
+	}
+	s := &Server{cfg: cfg, log: log, judge: j, ledger: l, plan: plan, mux: http.NewServeMux()}
 	s.routes()
 	return s
+}
+
+// gated reports whether the caller is over their trial and, if so, writes the
+// "trial spent" fragment. Fails open on a ledger error (a DB blip must not block use).
+func (s *Server) gated(w http.ResponseWriter, r *http.Request) bool {
+	u, err := s.ledger.Usage(r.Context(), s.user(r))
+	if err != nil {
+		s.log.Warn("gate: usage read failed", "err", err)
+		return false
+	}
+	st := billing.Evaluate(u.Tokens(), s.plan)
+	if st.Blocked {
+		_ = web.GateBlocked(st).Render(r.Context(), w)
+		return true
+	}
+	return false
 }
 
 // Handler returns the root http.Handler.
@@ -80,6 +103,9 @@ func (s *Server) demoJudge(w http.ResponseWriter, r *http.Request) {
 	question := strings.TrimSpace(r.FormValue("question"))
 	if question == "" {
 		question = "Does this convey urgency?"
+	}
+	if s.gated(w, r) {
+		return
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)

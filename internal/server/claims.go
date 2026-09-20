@@ -36,6 +36,9 @@ func (s *Server) claimsScreen(w http.ResponseWriter, r *http.Request) {
 	if category == "" {
 		category = "general"
 	}
+	if s.gated(w, r) {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), screenTimeout)
 	defer cancel()

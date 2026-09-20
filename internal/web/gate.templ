@@ -1,0 +1,15 @@
+package web
+
+import "jevai/internal/billing"
+
+// GateBlocked is shown when a caller has spent their free trial.
+templ GateBlocked(st billing.Status) {
+	@Window("trial spent") {
+		<div class="font-mono text-xs text-ink">
+			<div class="text-2xl font-bold text-magenta">Trial spent</div>
+			<p class="mt-2 text-ink/70">{ gateUsage(st) }</p>
+			<p class="mt-1 text-ink/60">Upgrade to keep judging every item.</p>
+			<a href="#get" class="box-btn mt-4">Upgrade →</a>
+		</div>
+	}
+}

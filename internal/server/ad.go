@@ -36,6 +36,9 @@ func (s *Server) adsPreflight(w http.ResponseWriter, r *http.Request) {
 	if platform == "" {
 		platform = "general"
 	}
+	if s.gated(w, r) {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), preflightWait)
 	defer cancel()

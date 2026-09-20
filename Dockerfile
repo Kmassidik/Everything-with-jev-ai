@@ -1,17 +1,20 @@
 # syntax=docker/dockerfile:1
 
 # ---- build: go + templ + tailwind, produce a static binary ----
-FROM golang:1.26-alpine AS build
-RUN apk add --no-cache curl
+# Debian (glibc) so the Tailwind standalone binary runs (it is not musl-compatible).
+FROM golang:1.26-bookworm AS build
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 
 # tooling: templ (matches go.mod) + tailwind standalone (no Node)
 COPY go.mod go.sum ./
 RUN go mod download
 RUN go install github.com/a-h/templ/cmd/templ@v0.3.1020
-RUN ARCH=$(uname -m); case "$ARCH" in x86_64) TW=x64;; aarch64) TW=arm64;; esac; \
-    curl -sSL -o /usr/local/bin/tailwindcss \
-      "https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-${TW}" \
+# Pin Tailwind v3 (config-file based) to match the dev shell; v4 uses CSS config.
+RUN ARCH=$(dpkg --print-architecture); case "$ARCH" in amd64) TW=x64;; arm64) TW=arm64;; esac; \
+    curl -fsSL -o /usr/local/bin/tailwindcss \
+      "https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-${TW}" \
     && chmod +x /usr/local/bin/tailwindcss
 
 COPY . .
