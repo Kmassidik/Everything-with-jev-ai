@@ -1,8 +1,10 @@
 package web
 
-templ Claims() {
+import "jevai/internal/account"
+
+templ Claims(user *account.User) {
 	@Layout("javai — claim screening") {
-		@Nav()
+		@Nav(user)
 		<main class="grid-bg">
 			<div class="wrap py-16">
 				<div class="max-w-3xl">

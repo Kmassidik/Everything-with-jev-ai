@@ -1,5 +1,7 @@
 package web
 
+import "jevai/internal/account"
+
 templ Layout(title string) {
 	<!DOCTYPE html>
 	<html lang="en" class="h-full">
@@ -22,15 +24,19 @@ templ Layout(title string) {
 	</html>
 }
 
-templ Nav() {
+templ Nav(user *account.User) {
 	<header class="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
 		<div class="wrap flex items-center gap-6 py-3">
 			<a href="/" class="flex items-center gap-1.5 font-display text-lg font-bold tracking-tight">javai<span class="inline-block h-2.5 w-2.5 bg-lime"></span></a>
-			<nav class="ml-auto flex items-center gap-6 text-sm">
-				<a href="#surfaces" class="text-muted transition hover:text-ink">Products</a>
-				<a href="#how" class="text-muted transition hover:text-ink">How</a>
-				<a href="#" class="text-muted transition hover:text-ink">Docs</a>
-				<a href="#try" class="btn-brand">Get started</a>
+			<nav class="ml-auto flex items-center gap-5 text-sm">
+				<a href="/#surfaces" class="text-muted transition hover:text-ink">Products</a>
+				<a href="/#how" class="text-muted transition hover:text-ink">How</a>
+				if user != nil {
+					<a href="/app" class="text-muted transition hover:text-ink">Dashboard</a>
+					<form method="post" action="/logout"><button type="submit" class="btn-ghost">Log out</button></form>
+				} else {
+					<a href="/login" class="btn-brand">Log in</a>
+				}
 			</nav>
 		</div>
 	</header>

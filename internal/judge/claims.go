@@ -60,18 +60,3 @@ type Claim struct {
 func Screen(ctx context.Context, j jev.Judge, pack Pack, c Claim) (*ItemReport, error) {
 	return runPack(ctx, j, pack, c.Category, map[string]string{"copy": c.Copy, "category": c.Category})
 }
-
-// Ad is one ad creative plus (optional) landing-page copy and the target platform.
-type Ad struct {
-	Creative string
-	Landing  string
-	Platform string
-}
-
-// Preflight runs the ad-preflight pack over one creative (judged against its
-// landing copy when provided).
-func Preflight(ctx context.Context, j jev.Judge, pack Pack, a Ad) (*ItemReport, error) {
-	return runPack(ctx, j, pack, a.Platform, map[string]string{
-		"creative": a.Creative, "landing": a.Landing, "platform": a.Platform,
-	})
-}

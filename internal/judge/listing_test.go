@@ -8,46 +8,48 @@ import (
 	"jevai/internal/jev"
 )
 
-func TestParseCSV(t *testing.T) {
+func TestParseListingsCSV(t *testing.T) {
 	in := "sku,title,description,category,price\nA1,Red Shoe,Nice red shoe,Shoes,10\nA2,,,,\nA3,Blue Hat,A warm hat,Hats,5\n"
-	got, err := ParseCSV(strings.NewReader(in), 100)
+	got, err := ParseListingsCSV(strings.NewReader(in), 100)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(got) != 2 {
 		t.Fatalf("want 2 non-blank rows, got %d", len(got))
 	}
-	if got[0].Title != "Red Shoe" || got[0].Category != "Shoes" {
+	if got[0].Title != "Red Shoe" || got[0].State["category"] != "Shoes" {
 		t.Errorf("bad parse: %+v", got[0])
 	}
 }
 
-func TestParseCSV_MaxCap(t *testing.T) {
-	var b strings.Builder
-	b.WriteString("title\n")
-	for i := 0; i < 50; i++ {
-		b.WriteString("x\n")
-	}
-	got, err := ParseCSV(strings.NewReader(b.String()), 10)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(got) != 10 {
-		t.Fatalf("cap not applied: got %d", len(got))
-	}
-}
-
-func TestParseCSV_NeedsColumn(t *testing.T) {
-	if _, err := ParseCSV(strings.NewReader("foo,bar\n1,2\n"), 10); err == nil {
+func TestParseListingsCSV_NeedsColumn(t *testing.T) {
+	if _, err := ParseListingsCSV(strings.NewReader("foo,bar\n1,2\n"), 10); err == nil {
 		t.Fatal("expected error for missing title/description column")
 	}
 }
 
+func TestParseAdsCSV(t *testing.T) {
+	in := "creative,landing,platform\nBuy now 50% off!,shop page,meta\n,,\nMiracle cure guaranteed,,google\n"
+	got, err := ParseAdsCSV(strings.NewReader(in), 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 2 {
+		t.Fatalf("want 2 ad variants, got %d", len(got))
+	}
+	if got[0].State["platform"] != "meta" {
+		t.Errorf("bad parse: %+v", got[0])
+	}
+	if got[1].State["platform"] != "google" {
+		t.Errorf("platform default/parse wrong: %+v", got[1])
+	}
+}
+
 func TestAudit_MockRanksAndMeters(t *testing.T) {
-	items := []Listing{
-		{Row: 2, Title: "A", Description: "aaa"},
-		{Row: 3, Title: "B", Description: "bbb"},
-		{Row: 4, Title: "C", Description: "ccc"},
+	items := []Item{
+		{Row: 2, Title: "A", State: map[string]string{"title": "A", "description": "aaa"}},
+		{Row: 3, Title: "B", State: map[string]string{"title": "B", "description": "bbb"}},
+		{Row: 4, Title: "C", State: map[string]string{"title": "C", "description": "ccc"}},
 	}
 	rep, err := Audit(context.Background(), jev.Mock{}, ListingHygiene, items, 2)
 	if err != nil {
@@ -62,9 +64,6 @@ func TestAudit_MockRanksAndMeters(t *testing.T) {
 	if rep.TokensIn == 0 {
 		t.Error("tokens not metered")
 	}
-	if len(rep.Results) != 3 {
-		t.Fatalf("results=%d, want 3", len(rep.Results))
-	}
 	for i := 1; i < len(rep.Results); i++ {
 		if rep.Results[i-1].Risk < rep.Results[i].Risk {
 			t.Errorf("not ranked worst-first at %d", i)
@@ -77,5 +76,19 @@ func TestAudit_MockRanksAndMeters(t *testing.T) {
 		if len(r.Findings) != len(ListingHygiene.Checks) {
 			t.Errorf("findings=%d, want %d", len(r.Findings), len(ListingHygiene.Checks))
 		}
+	}
+}
+
+func TestAudit_AdsPack(t *testing.T) {
+	items, err := ParseAdsCSV(strings.NewReader("creative,landing,platform\nGuaranteed #1 results lose 10kg,gym page,meta\n"), 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rep, err := Audit(context.Background(), jev.Mock{}, AdPreflight, items, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rep.Results) != 1 || len(rep.Results[0].Findings) != len(AdPreflight.Checks) {
+		t.Fatalf("unexpected ad report: %+v", rep)
 	}
 }

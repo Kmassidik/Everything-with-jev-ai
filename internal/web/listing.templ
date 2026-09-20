@@ -1,12 +1,13 @@
 package web
 
+import "jevai/internal/account"
 import "jevai/internal/judge"
 import "fmt"
 import "time"
 
-templ Listing() {
+templ Listing(user *account.User) {
 	@Layout("javai — listing hygiene") {
-		@Nav()
+		@Nav(user)
 		<main class="grid-bg">
 			<div class="wrap py-16">
 				<div class="max-w-3xl">
@@ -17,21 +18,7 @@ templ Listing() {
 						category, prohibited claims and missing detail — ranked worst-first, with a CSV of
 						the fixes to hand back.
 					</p>
-					<form
-						class="mt-8 grid gap-3"
-						hx-post="/listing/audit"
-						hx-target="#report"
-						hx-swap="innerHTML"
-						hx-encoding="multipart/form-data"
-						hx-indicator="#spin"
-					>
-						<input type="file" name="csv" accept=".csv,text/csv" required class="field"/>
-						<div class="flex items-center gap-3">
-							<button type="submit" class="btn-brand w-fit">Run audit →</button>
-							<span id="spin" class="htmx-indicator label">scoring…</span>
-						</div>
-						<p class="label">columns: sku · title · description · category · price · max 200 rows</p>
-					</form>
+					@uploadForm("/listing/audit", "sku · title · description · category · price · max 200 rows")
 					<div id="report" class="mt-10"></div>
 				</div>
 			</div>
@@ -40,16 +27,34 @@ templ Listing() {
 	}
 }
 
+templ uploadForm(action, cols string) {
+	<form
+		class="mt-8 grid gap-3"
+		hx-post={ action }
+		hx-target="#report"
+		hx-swap="innerHTML"
+		hx-encoding="multipart/form-data"
+		hx-indicator="#spin"
+	>
+		<input type="file" name="csv" accept=".csv,text/csv" required class="field"/>
+		<div class="flex items-center gap-3">
+			<button type="submit" class="btn-brand w-fit">Run audit →</button>
+			<span id="spin" class="htmx-indicator label">scoring…</span>
+		</div>
+		<p class="label">columns: { cols }</p>
+	</form>
+}
+
 templ ErrorBox(msg string) {
 	@Panel("error") {
 		<p class="font-mono text-xs text-flag">{ msg }</p>
 	}
 }
 
-// ListingReport is the HTMX fragment after an audit: the table + save/export actions.
-templ ListingReport(rep *judge.Report, id string) {
-	@Panel("result · listing-hygiene") {
-		@listingRows(rep)
+// BatchReport is the HTMX fragment after an audit (listing or ads): table + actions.
+templ BatchReport(rep *judge.Report, id string) {
+	@Panel("result · " + rep.Pack) {
+		@batchRows(rep)
 		<p class="label mt-4">
 			{ reportMeta(rep) }
 			if rep.Sample {
@@ -66,22 +71,22 @@ templ ListingReport(rep *judge.Report, id string) {
 	}
 }
 
-// AuditPage is the permalink for a saved audit.
-templ AuditPage(rep *judge.Report, id string, at time.Time) {
+// AuditPage is the permalink for a saved audit (listing or ads).
+templ AuditPage(user *account.User, rep *judge.Report, id string, at time.Time) {
 	@Layout("javai — saved audit") {
-		@Nav()
+		@Nav(user)
 		<main class="grid-bg">
 			<div class="wrap py-16">
 				<div class="max-w-3xl">
-					<span class="label">Saved audit · { at.UTC().Format("2 Jan 2006, 15:04 MST") }</span>
-					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight">Listing audit</h1>
+					<span class="label">Saved · { at.UTC().Format("2 Jan 2006, 15:04 MST") }</span>
+					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight">{ packTitle(rep.Pack) }</h1>
 					<div class="mt-6 flex flex-wrap gap-3">
 						<a href={ templ.SafeURL("/a/" + id + "/csv") } class="btn-brand">Download CSV →</a>
 						<a href="/listing" class="btn-ghost">New audit</a>
 					</div>
 					<div class="mt-8">
-						@Panel("result · listing-hygiene") {
-							@listingRows(rep)
+						@Panel("result · " + rep.Pack) {
+							@batchRows(rep)
 							<p class="label mt-4">{ reportMeta(rep) }</p>
 						}
 					</div>
@@ -94,7 +99,7 @@ templ AuditPage(rep *judge.Report, id string, at time.Time) {
 
 templ AuditNotFound() {
 	@Layout("javai — not found") {
-		@Nav()
+		@Nav(nil)
 		<main class="grid-bg">
 			<div class="wrap py-24 text-center">
 				<h1 class="font-display text-4xl font-bold tracking-tight">Audit not found</h1>
@@ -106,13 +111,13 @@ templ AuditNotFound() {
 	}
 }
 
-templ listingRows(rep *judge.Report) {
+templ batchRows(rep *judge.Report) {
 	<div class="overflow-x-auto">
 		<table class="w-full border-collapse font-mono text-xs">
 			<thead>
 				<tr class="label border-b border-line text-left">
 					<th class="py-1.5 pr-3">#</th>
-					<th class="py-1.5 pr-3">Listing</th>
+					<th class="py-1.5 pr-3">Item</th>
 					<th class="py-1.5 pr-3">Risk</th>
 					<th class="py-1.5">Flags</th>
 				</tr>
@@ -120,8 +125,8 @@ templ listingRows(rep *judge.Report) {
 			<tbody>
 				for _, res := range rep.Results {
 					<tr class="border-b border-line align-top last:border-0">
-						<td class="py-2 pr-3 text-muted">{ fmt.Sprint(res.Listing.Row) }</td>
-						<td class="max-w-[24ch] truncate py-2 pr-3">{ listingTitle(res) }</td>
+						<td class="py-2 pr-3 text-muted">{ fmt.Sprint(res.Item.Row) }</td>
+						<td class="max-w-[26ch] truncate py-2 pr-3">{ itemTitle(res) }</td>
 						<td class="py-2 pr-3">
 							if res.Err != "" {
 								<span class="text-muted">—</span>

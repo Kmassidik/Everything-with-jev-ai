@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"jevai/internal/account"
 	"jevai/internal/judge"
 	"jevai/internal/web"
 )
@@ -16,18 +18,39 @@ import (
 // Bounds that keep one request memory- and cost-safe.
 const (
 	maxUploadBytes   = 5 << 20 // 5 MB
-	maxRows          = 200     // caps Jev calls, memory, and spend per audit
-	auditConcurrency = 6       // in-flight Jev requests
-	auditTimeout     = 90 * time.Second
+	maxRows          = 200
+	auditConcurrency = 6
+	auditTimeout     = 120 * time.Second
 )
 
 func (s *Server) listingPage(w http.ResponseWriter, r *http.Request) {
-	_ = web.Listing().Render(r.Context(), w)
+	u, ok := s.requirePage(w, r)
+	if !ok {
+		return
+	}
+	_ = web.Listing(u).Render(r.Context(), w)
 }
 
-// listingAudit parses an uploaded CSV, judges every row, and returns a ranked
-// HTMX report fragment.
 func (s *Server) listingAudit(w http.ResponseWriter, r *http.Request) {
+	u, ok := s.requireHTMX(w, r)
+	if !ok {
+		return
+	}
+	s.runBatch(w, r, u, judge.ListingHygiene, judge.ParseListingsCSV)
+}
+
+func (s *Server) adsAudit(w http.ResponseWriter, r *http.Request) {
+	u, ok := s.requireHTMX(w, r)
+	if !ok {
+		return
+	}
+	s.runBatch(w, r, u, judge.AdPreflight, judge.ParseAdsCSV)
+}
+
+// runBatch handles a CSV upload → parse → judge → save → HTMX report, for any pack.
+func (s *Server) runBatch(w http.ResponseWriter, r *http.Request, u *account.User, pack judge.Pack,
+	parse func(io.Reader, int) ([]judge.Item, error)) {
+
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadBytes)
 	if err := r.ParseMultipartForm(maxUploadBytes); err != nil {
 		_ = web.ErrorBox("Upload too large or malformed (max 5 MB).").Render(r.Context(), w)
@@ -35,49 +58,47 @@ func (s *Server) listingAudit(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() {
 		if r.MultipartForm != nil {
-			_ = r.MultipartForm.RemoveAll() // clean any spilled temp files
+			_ = r.MultipartForm.RemoveAll()
 		}
 	}()
 
 	file, _, err := r.FormFile("csv")
 	if err != nil {
-		_ = web.ErrorBox("Choose a CSV file to audit.").Render(r.Context(), w)
+		_ = web.ErrorBox("Choose a CSV file to run.").Render(r.Context(), w)
 		return
 	}
 	defer file.Close()
 
-	items, err := judge.ParseCSV(file, maxRows)
+	items, err := parse(file, maxRows)
 	if err != nil {
 		_ = web.ErrorBox(err.Error()).Render(r.Context(), w)
 		return
 	}
-	if s.gated(w, r) {
+	if s.gated(w, r, u.Username) {
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), auditTimeout)
 	defer cancel()
 
-	report, err := judge.Audit(ctx, s.judge, judge.ListingHygiene, items, auditConcurrency)
+	report, err := judge.Audit(ctx, s.judge, pack, items, auditConcurrency)
 	if err != nil {
-		s.log.Warn("listing audit failed", "err", err)
-		_ = web.ErrorBox("Audit failed: "+err.Error()).Render(r.Context(), w)
+		s.log.Warn("audit failed", "pack", pack.Name, "err", err)
+		_ = web.ErrorBox("Run failed: "+err.Error()).Render(r.Context(), w)
 		return
 	}
 
-	if err := s.ledger.Record(r.Context(), s.user(r), report.TokensIn, report.TokensOut, report.Judgments); err != nil {
+	if err := s.ledger.Record(r.Context(), u.Username, report.TokensIn, report.TokensOut, report.Judgments); err != nil {
 		s.log.Warn("ledger record failed", "err", err)
 	}
-
-	// persist so the result is a shareable artifact (permalink + CSV), not throwaway
-	id, err := s.audits.Save(r.Context(), report)
+	id, err := s.audits.Save(r.Context(), u.ID, report)
 	if err != nil {
 		s.log.Warn("save audit failed", "err", err)
 	}
-	_ = web.ListingReport(report, id).Render(r.Context(), w)
+	_ = web.BatchReport(report, id).Render(r.Context(), w)
 }
 
-// auditPage renders a saved audit at its permalink.
+// auditPage renders a saved audit at its (public, shareable) permalink.
 func (s *Server) auditPage(w http.ResponseWriter, r *http.Request) {
 	report, at, err := s.audits.Get(r.Context(), r.PathValue("id"))
 	if err != nil {
@@ -85,10 +106,10 @@ func (s *Server) auditPage(w http.ResponseWriter, r *http.Request) {
 		_ = web.AuditNotFound().Render(r.Context(), w)
 		return
 	}
-	_ = web.AuditPage(report, r.PathValue("id"), at).Render(r.Context(), w)
+	_ = web.AuditPage(s.currentUser(r), report, r.PathValue("id"), at).Render(r.Context(), w)
 }
 
-// auditCSV streams a saved audit as a CSV of the flagged rows.
+// auditCSV streams a saved audit as CSV (columns from the item fields + scores).
 func (s *Server) auditCSV(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	report, _, err := s.audits.Get(r.Context(), id)
@@ -97,14 +118,31 @@ func (s *Server) auditCSV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
-	w.Header().Set("Content-Disposition", "attachment; filename=\"listing-audit-"+id+".csv\"")
+	w.Header().Set("Content-Disposition", "attachment; filename=\""+report.Pack+"-"+id+".csv\"")
 
 	cw := csv.NewWriter(w)
 	defer cw.Flush()
-	_ = cw.Write([]string{"row", "sku", "title", "category", "price", "risk_pct", "flagged_issues", "detail"})
+
+	// header: row + item columns + risk + flags + detail
+	var colKeys []string
 	for _, res := range report.Results {
+		for _, c := range res.Item.Cols {
+			colKeys = append(colKeys, c.Key)
+		}
+		break
+	}
+	header := append([]string{"row"}, colKeys...)
+	header = append(header, "risk_pct", "flagged_issues", "detail")
+	_ = cw.Write(header)
+
+	for _, res := range report.Results {
+		rec := []string{strconv.Itoa(res.Item.Row)}
+		for _, c := range res.Item.Cols {
+			rec = append(rec, c.Val)
+		}
 		if res.Err != "" {
-			_ = cw.Write([]string{strconv.Itoa(res.Listing.Row), res.Listing.SKU, res.Listing.Title, res.Listing.Category, res.Listing.Price, "", "error: " + res.Err, ""})
+			rec = append(rec, "", "error: "+res.Err, "")
+			_ = cw.Write(rec)
 			continue
 		}
 		var flagged, detail []string
@@ -114,11 +152,7 @@ func (s *Server) auditCSV(w http.ResponseWriter, r *http.Request) {
 				flagged = append(flagged, f.Label)
 			}
 		}
-		_ = cw.Write([]string{
-			strconv.Itoa(res.Listing.Row), res.Listing.SKU, res.Listing.Title,
-			res.Listing.Category, res.Listing.Price,
-			fmt.Sprintf("%.0f", res.Risk*100),
-			strings.Join(flagged, "; "), strings.Join(detail, " "),
-		})
+		rec = append(rec, fmt.Sprintf("%.0f", res.Risk*100), strings.Join(flagged, "; "), strings.Join(detail, " "))
+		_ = cw.Write(rec)
 	}
 }

@@ -1,39 +1,22 @@
 package web
 
-templ Ads() {
+import "jevai/internal/account"
+
+templ Ads(user *account.User) {
 	@Layout("javai — ad pre-flight") {
-		@Nav()
+		@Nav(user)
 		<main class="grid-bg">
 			<div class="wrap py-16">
 				<div class="max-w-3xl">
 					<span class="label">Surface · ad pre-flight</span>
-					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">Pre-flight every ad.</h1>
+					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">Pre-flight the whole campaign.</h1>
 					<p class="mt-4 max-w-xl text-muted">
-						Paste an ad creative before you spend. It's screened for prohibited claims,
-						brand safety, restricted categories, misleading urgency — and whether it matches
-						the landing page.
+						Upload your ad variants before you spend. Every creative is screened for prohibited
+						claims, brand safety, restricted categories, misleading urgency — and whether it
+						matches the landing page. Ranked worst-first, with a CSV to hand the client.
 					</p>
-					<form
-						class="mt-8 grid gap-3"
-						hx-post="/ads/preflight"
-						hx-target="#ad-out"
-						hx-swap="innerHTML"
-						hx-indicator="#spin"
-					>
-						<textarea name="creative" rows="4" required class="field" placeholder="Ad creative / headline + body…"></textarea>
-						<textarea name="landing" rows="3" class="field" placeholder="Landing page copy (optional — enables the match check)…"></textarea>
-						<select name="platform" class="field">
-							<option value="meta">Meta (Facebook / Instagram)</option>
-							<option value="google">Google</option>
-							<option value="tiktok">TikTok</option>
-							<option value="general">General</option>
-						</select>
-						<div class="flex items-center gap-3">
-							<button type="submit" class="btn-brand w-fit">Pre-flight →</button>
-							<span id="spin" class="htmx-indicator label">checking…</span>
-						</div>
-					</form>
-					<div id="ad-out" class="mt-10"></div>
+					@uploadForm("/ads/audit", "creative · landing · platform · max 200 variants")
+					<div id="report" class="mt-10"></div>
 				</div>
 			</div>
 		</main>

@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"jevai/internal/account"
 	"jevai/internal/jev"
 	"jevai/internal/ledger"
 	"jevai/internal/server"
@@ -27,6 +28,7 @@ func main() {
 		JevModel:    env("JEV_MODEL", "jev-latest"),
 		JevKey:      os.Getenv("TYPESAFE_API_KEY"),
 		TrialTokens: envInt("JEVAI_TRIAL_TOKENS", 1_000_000),
+		AdminToken:  os.Getenv("JAVAI_ADMIN_TOKEN"),
 	}
 
 	// Judge: live client when a key is set, otherwise the deterministic sample Mock.
@@ -47,7 +49,7 @@ func main() {
 	}
 	defer func() { _ = led.Close() }()
 
-	// Audit store: saved, shareable results (permalink + CSV). Required for the product.
+	// Audit store: saved, shareable results (permalink + CSV).
 	audits, err := store.Open(dbPath)
 	if err != nil {
 		log.Error("audit store unavailable", "err", err)
@@ -55,9 +57,17 @@ func main() {
 	}
 	defer func() { _ = audits.Close() }()
 
+	// Accounts: invite-only users, sessions, profiles.
+	accounts, err := account.Open(dbPath)
+	if err != nil {
+		log.Error("account store unavailable", "err", err)
+		os.Exit(1)
+	}
+	defer func() { _ = accounts.Close() }()
+
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           server.New(cfg, log, judge, led, audits).Handler(),
+		Handler:           server.New(cfg, log, judge, led, audits, accounts).Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 

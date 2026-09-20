@@ -1,8 +1,10 @@
 package web
 
-templ Landing(hasKey bool) {
+import "jevai/internal/account"
+
+templ Landing(user *account.User, hasKey bool) {
 	@Layout("javai — score every item, sort what matters") {
-		@Nav()
+		@Nav(user)
 		<main>
 			<!-- hero -->
 			<section class="grid-bg border-b border-ink">
@@ -18,8 +20,8 @@ templ Landing(hasKey bool) {
 							not a sample.
 						</p>
 						<div class="mt-8 flex flex-wrap items-center gap-3">
-							<a href="#try" class="btn-brand">Start free</a>
-							<a href="#how" class="btn-ghost">See it work</a>
+							<a href="/login" class="btn-brand">Log in</a>
+							<a href="#try" class="btn-ghost">Try it free</a>
 						</div>
 						<p class="label mt-6">$0.00004 an item · ~300&nbsp;ms · model: <span class="text-ink">TypeSafe Jev</span></p>
 					</div>

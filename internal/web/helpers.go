@@ -5,7 +5,17 @@ import (
 
 	"jevai/internal/billing"
 	"jevai/internal/judge"
+	"jevai/internal/ledger"
+	"jevai/internal/store"
 )
+
+func usageChip(_ ledger.Usage, gate billing.Status) string {
+	return fmt.Sprintf("%d of %d free tokens used", gate.Used, gate.Allowance)
+}
+
+func auditMetaLine(a store.AuditMeta) string {
+	return fmt.Sprintf("%d items · %d flagged · %s", a.Items, a.Flagged, a.CreatedAt.UTC().Format("2 Jan 15:04"))
+}
 
 // pct formats a 0..1 probability as a whole percent.
 func pct(f float64) string { return fmt.Sprintf("%.0f%%", f*100) }
@@ -47,18 +57,27 @@ func tierText(tier string) string {
 // riskClass colors a risk figure by tier.
 func riskClass(f float64) string { return "font-semibold " + tierText(probTier(f)) }
 
-func listingTitle(res judge.Result) string {
-	if res.Listing.Title != "" {
-		return res.Listing.Title
-	}
-	if res.Listing.SKU != "" {
-		return res.Listing.SKU
+func itemTitle(res judge.Result) string {
+	if res.Item.Title != "" {
+		return res.Item.Title
 	}
 	return "(untitled)"
 }
 
 func reportMeta(r *judge.Report) string {
-	return fmt.Sprintf("%d judged · %d tokens", r.Judgments, r.TokensIn+r.TokensOut)
+	return fmt.Sprintf("%d scored · %d tokens", r.Judgments, r.TokensIn+r.TokensOut)
+}
+
+// packTitle names a saved report by its pack.
+func packTitle(pack string) string {
+	switch pack {
+	case "ad-preflight":
+		return "Ad pre-flight"
+	case "listing-hygiene":
+		return "Listing audit"
+	default:
+		return "Audit"
+	}
 }
 
 func itemMeta(r *judge.ItemReport) string {

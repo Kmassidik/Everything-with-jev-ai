@@ -1,5 +1,5 @@
 // Package store persists finished audits so a result is a durable, shareable
-// artifact (a permalink + a CSV export) rather than a throwaway screenful.
+// artifact (a permalink + a CSV export) and shows up in the owner's history.
 package store
 
 import (
@@ -21,12 +21,24 @@ type Audits struct{ db *sql.DB }
 const auditSchema = `
 CREATE TABLE IF NOT EXISTS audits (
     id         TEXT PRIMARY KEY,
+    user_id    INTEGER NOT NULL DEFAULT 0,
     pack       TEXT NOT NULL,
+    items      INTEGER NOT NULL DEFAULT 0,
+    flagged    INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL,
     report     TEXT NOT NULL
-);`
+);
+CREATE INDEX IF NOT EXISTS idx_audits_user ON audits(user_id, created_at);`
 
-// Open opens (and migrates) the audits store at path (may share the ledger's file).
+// AuditMeta is a history-row summary (no full report).
+type AuditMeta struct {
+	ID        string
+	Pack      string
+	Items     int
+	Flagged   int
+	CreatedAt time.Time
+}
+
 func Open(path string) (*Audits, error) {
 	dsn := path + "?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 	db, err := sql.Open("sqlite", dsn)
@@ -38,21 +50,38 @@ func Open(path string) (*Audits, error) {
 		_ = db.Close()
 		return nil, fmt.Errorf("migrate: %w", err)
 	}
+	// migrate older tables that predate the newer columns (errors ignored if present)
+	for _, col := range []string{
+		"ALTER TABLE audits ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0",
+		"ALTER TABLE audits ADD COLUMN items INTEGER NOT NULL DEFAULT 0",
+		"ALTER TABLE audits ADD COLUMN flagged INTEGER NOT NULL DEFAULT 0",
+	} {
+		_, _ = db.ExecContext(context.Background(), col)
+	}
 	return &Audits{db: db}, nil
 }
 
 func (s *Audits) Close() error { return s.db.Close() }
 
-// Save stores a report and returns its short shareable id.
-func (s *Audits) Save(ctx context.Context, r *judge.Report) (string, error) {
+// Save stores a report owned by userID and returns its short shareable id.
+func (s *Audits) Save(ctx context.Context, userID int64, r *judge.Report) (string, error) {
 	data, err := json.Marshal(r)
 	if err != nil {
 		return "", err
 	}
+	flagged := 0
+	for _, res := range r.Results {
+		for _, f := range res.Findings {
+			if f.Flag {
+				flagged++
+				break
+			}
+		}
+	}
 	id := newID()
 	if _, err := s.db.ExecContext(ctx,
-		`INSERT INTO audits (id, pack, created_at, report) VALUES (?, ?, ?, ?)`,
-		id, r.Pack, time.Now().UTC(), string(data)); err != nil {
+		`INSERT INTO audits (id, user_id, pack, items, flagged, created_at, report) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		id, userID, r.Pack, len(r.Results), flagged, time.Now().UTC(), string(data)); err != nil {
 		return "", err
 	}
 	return id, nil
@@ -73,8 +102,28 @@ func (s *Audits) Get(ctx context.Context, id string) (*judge.Report, time.Time, 
 	return &r, at, nil
 }
 
+// ListByUser returns a user's recent audits (newest first).
+func (s *Audits) ListByUser(ctx context.Context, userID int64, limit int) ([]AuditMeta, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT id, pack, items, flagged, created_at FROM audits WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
+		userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []AuditMeta
+	for rows.Next() {
+		var m AuditMeta
+		if err := rows.Scan(&m.ID, &m.Pack, &m.Items, &m.Flagged, &m.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, m)
+	}
+	return out, rows.Err()
+}
+
 func newID() string {
-	b := make([]byte, 9) // 12 url-safe chars
+	b := make([]byte, 9)
 	_, _ = rand.Read(b)
 	return base64.RawURLEncoding.EncodeToString(b)
 }

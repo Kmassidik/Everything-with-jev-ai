@@ -11,17 +11,23 @@ import (
 )
 
 const (
-	maxCopyBytes  = 1 << 20 // 1 MB of pasted copy is plenty
+	maxCopyBytes  = 1 << 20
 	screenTimeout = 30 * time.Second
 )
 
 func (s *Server) claimsPage(w http.ResponseWriter, r *http.Request) {
-	_ = web.Claims().Render(r.Context(), w)
+	u, ok := s.requirePage(w, r)
+	if !ok {
+		return
+	}
+	_ = web.Claims(u).Render(r.Context(), w)
 }
 
-// claimsScreen runs the claim-screening pack over one piece of copy and returns the
-// HTMX report fragment.
 func (s *Server) claimsScreen(w http.ResponseWriter, r *http.Request) {
+	u, ok := s.requireHTMX(w, r)
+	if !ok {
+		return
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxCopyBytes)
 	if err := r.ParseForm(); err != nil {
 		_ = web.ErrorBox("Copy too large or malformed (max 1 MB).").Render(r.Context(), w)
@@ -36,7 +42,7 @@ func (s *Server) claimsScreen(w http.ResponseWriter, r *http.Request) {
 	if category == "" {
 		category = "general"
 	}
-	if s.gated(w, r) {
+	if s.gated(w, r, u.Username) {
 		return
 	}
 
@@ -49,8 +55,7 @@ func (s *Server) claimsScreen(w http.ResponseWriter, r *http.Request) {
 		_ = web.ErrorBox("Screening failed: "+err.Error()).Render(r.Context(), w)
 		return
 	}
-
-	if err := s.ledger.Record(r.Context(), s.user(r), rep.TokensIn, rep.TokensOut, 1); err != nil {
+	if err := s.ledger.Record(r.Context(), u.Username, rep.TokensIn, rep.TokensOut, 1); err != nil {
 		s.log.Warn("ledger record failed", "err", err)
 	}
 	_ = web.ItemReport(rep, "category").Render(r.Context(), w)

@@ -1,0 +1,63 @@
+package web
+
+templ Login(wrong bool) {
+	@Layout("javai — log in") {
+		@Nav(nil)
+		<main class="grid-bg">
+			<div class="wrap py-24">
+				<div class="mx-auto max-w-sm">
+					<span class="label">Log in</span>
+					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight">Welcome back.</h1>
+					<form method="post" action="/login" class="mt-8 grid gap-3">
+						<input name="username" required autofocus class="field" placeholder="username"/>
+						<input name="password" type="password" required class="field" placeholder="password"/>
+						if wrong {
+							<p class="font-mono text-xs text-flag">Wrong username or password.</p>
+						}
+						<button type="submit" class="btn-brand w-fit">Log in →</button>
+					</form>
+					<p class="label mt-6">No account yet? You'll need an invite link.</p>
+				</div>
+			</div>
+		</main>
+		@Foot()
+	}
+}
+
+templ Join(token, errMsg string) {
+	@Layout("javai — create your account") {
+		@Nav(nil)
+		<main class="grid-bg">
+			<div class="wrap py-24">
+				<div class="mx-auto max-w-sm">
+					<span class="chip"><span class="inline-block h-2 w-2 bg-lime"></span> You're invited</span>
+					<h1 class="mt-5 font-display text-4xl font-bold tracking-tight">Create your account.</h1>
+					<form method="post" action={ templ.SafeURL("/join/" + token) } class="mt-8 grid gap-3">
+						<input name="username" required autofocus class="field" placeholder="pick a username"/>
+						<input name="password" type="password" required class="field" placeholder="password (8+ characters)"/>
+						if errMsg != "" {
+							<p class="font-mono text-xs text-flag">{ errMsg }</p>
+						}
+						<button type="submit" class="btn-brand w-fit">Create account →</button>
+					</form>
+					<p class="label mt-6">username: lowercase letters, digits, _ or - (3–32)</p>
+				</div>
+			</div>
+		</main>
+		@Foot()
+	}
+}
+
+templ JoinInvalid() {
+	@Layout("javai — invite") {
+		@Nav(nil)
+		<main class="grid-bg">
+			<div class="wrap py-24 text-center">
+				<h1 class="font-display text-4xl font-bold tracking-tight">Invite not valid</h1>
+				<p class="mt-3 text-muted">This invite link is invalid or has already been used.</p>
+				<a href="/login" class="btn-brand mt-6">Log in instead</a>
+			</div>
+		</main>
+		@Foot()
+	}
+}

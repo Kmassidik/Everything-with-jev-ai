@@ -1,0 +1,75 @@
+package web
+
+import (
+	"jevai/internal/account"
+	"jevai/internal/billing"
+	"jevai/internal/ledger"
+	"jevai/internal/store"
+)
+
+templ Dashboard(user *account.User, recent []store.AuditMeta, usage ledger.Usage, gate billing.Status) {
+	@Layout("javai — dashboard") {
+		@Nav(user)
+		<main class="grid-bg">
+			<div class="wrap py-16">
+				<span class="label">Dashboard</span>
+				<h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">Hi, { user.DisplayName }.</h1>
+				<div class="mt-6 flex flex-wrap items-center gap-3">
+					<span class="chip">{ usageChip(usage, gate) }</span>
+					if gate.Blocked {
+						<span class="chip border-flag/40 text-flag">trial spent</span>
+					}
+					<a href="/profile" class="chip transition hover:border-ink">Profile →</a>
+				</div>
+				<h2 class="label mt-14">Run a product</h2>
+				<div class="mt-4 grid gap-4 sm:grid-cols-3">
+					@surfaceCard("01", "Listing hygiene", "messy catalogue → ranked fix list", "/listing")
+					@surfaceCard("02", "Ad pre-flight", "variants → what'll get rejected", "/ads")
+					@surfaceCard("03", "Claim screening", "copy → the claims that'll bite you", "/claims")
+				</div>
+				<h2 class="label mt-14">Your recent audits</h2>
+				if len(recent) == 0 {
+					<p class="mt-4 text-muted">Nothing yet — run a product above and it saves here.</p>
+				} else {
+					<div class="card mt-4 divide-y divide-line">
+						for _, a := range recent {
+							<a href={ templ.SafeURL("/a/" + a.ID) } class="flex items-center justify-between gap-4 px-4 py-3 transition hover:bg-paper">
+								<span class="font-mono text-sm">{ packTitle(a.Pack) }</span>
+								<span class="label">{ auditMetaLine(a) }</span>
+							</a>
+						}
+					</div>
+				}
+			</div>
+		</main>
+		@Foot()
+	}
+}
+
+templ Profile(user *account.User, msg string) {
+	@Layout("javai — profile") {
+		@Nav(user)
+		<main class="grid-bg">
+			<div class="wrap py-16">
+				<div class="max-w-md">
+					<span class="label">Profile</span>
+					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight">{ user.Username }</h1>
+					if msg != "" {
+						<p class="mt-4 font-mono text-xs text-ink">{ msg }</p>
+					}
+					<form method="post" action="/profile/name" class="mt-8 grid gap-2">
+						<label class="label">Display name</label>
+						<input name="display_name" value={ user.DisplayName } class="field"/>
+						<button type="submit" class="btn-ghost mt-1 w-fit">Save name</button>
+					</form>
+					<form method="post" action="/profile/password" class="mt-10 grid gap-2">
+						<label class="label">Change password</label>
+						<input name="password" type="password" placeholder="new password (8+ characters)" class="field"/>
+						<button type="submit" class="btn-ghost mt-1 w-fit">Change password</button>
+					</form>
+				</div>
+			</div>
+		</main>
+		@Foot()
+	}
+}
