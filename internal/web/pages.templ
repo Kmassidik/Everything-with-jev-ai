@@ -74,9 +74,9 @@ templ Landing(hasKey bool) {
 				<p class="label">Surfaces</p>
 				<h3 class="mt-2 font-display text-3xl font-bold">One engine. Every judged workflow.</h3>
 				<div class="mt-8 grid gap-4 sm:grid-cols-3">
-					@surfaceCard("Listing hygiene", "CSV of SKUs → ranked fix list", "grass")
-					@surfaceCard("Ad pre-flight", "creative + landing → risk report", "teal")
-					@surfaceCard("Claim screening", "copy + rules → flagged claims", "magenta")
+					@surfaceCard("Listing hygiene", "CSV of SKUs → ranked fix list", "grass", "/listing")
+					@surfaceCard("Ad pre-flight", "creative + landing → risk report", "teal", "#")
+					@surfaceCard("Claim screening", "copy + rules → flagged claims", "magenta", "#")
 				</div>
 			</section>
 			<!-- try (HTMX demo) -->
@@ -102,29 +102,27 @@ templ Landing(hasKey bool) {
 	}
 }
 
-templ surfaceCard(title, desc, accent string) {
-	<div class="win">
+templ surfaceCard(title, desc, accent, href string) {
+	<a href={ templ.SafeURL(href) } class="win block transition-transform hover:-translate-y-0.5">
 		<div class="win-bar">
 			<span class={ "win-dot", templ.KV("bg-grass", accent == "grass"), templ.KV("bg-teal", accent == "teal"), templ.KV("bg-magenta", accent == "magenta") }></span>
 			<span>{ title }</span>
 		</div>
 		<div class="p-4 font-mono text-xs text-ink/70">{ desc }</div>
-	</div>
+	</a>
 }
 
 // DemoResult is the HTMX fragment returned by POST /demo/judge.
-templ DemoResult(question string, hasKey bool) {
+templ DemoResult(question string, prob float64, live, errd bool) {
 	@Window("result · noul") {
 		<div class="font-mono text-xs text-ink">
 			<div class="label mb-2">{ question }</div>
-			if hasKey {
-				<div class="text-3xl font-bold text-grass">0.92</div>
-				<p class="mt-2 text-ink/60">Live via Jev. (Real call wired in build step 2.)</p>
+			if errd {
+				<div class="text-3xl font-bold text-magenta">error</div>
+				<p class="mt-2 text-ink/60">Jev request failed — check the key and connectivity.</p>
 			} else {
-				<div class="text-3xl font-bold text-muted">— · —</div>
-				<p class="mt-2 text-ink/60">
-					Set <span class="text-ink">TYPESAFE_API_KEY</span> to run a live judgment — this is the scaffold.
-				</p>
+				<div class={ noulClass(prob) }>{ pct(prob) }</div>
+				<p class="mt-2 text-ink/60">{ demoNote(live) }</p>
 			}
 		</div>
 	}

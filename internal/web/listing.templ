@@ -1,0 +1,91 @@
+package web
+
+import "jevai/internal/judge"
+import "fmt"
+
+templ Listing() {
+	@Layout("jevai — listing hygiene") {
+		@CropMarks()
+		@Nav()
+		<main class="mx-auto max-w-4xl px-5 py-16">
+			<p class="label">Surface · listing hygiene</p>
+			<h1 class="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Audit every listing.</h1>
+			<p class="mt-4 max-w-xl text-ink/70">
+				Upload a CSV of your listings. Every row is judged on title–description match,
+				category, prohibited claims and missing detail — then ranked worst-first.
+			</p>
+			<form
+				class="mt-8 grid gap-3"
+				hx-post="/listing/audit"
+				hx-target="#report"
+				hx-swap="innerHTML"
+				hx-encoding="multipart/form-data"
+				hx-indicator="#spin"
+			>
+				<input type="file" name="csv" accept=".csv,text/csv" required class="field"/>
+				<div class="flex items-center gap-3">
+					<button type="submit" class="box-btn w-fit">Run audit →</button>
+					<span id="spin" class="htmx-indicator label">judging…</span>
+				</div>
+				<p class="label">columns: sku · title · description · category · price · max 200 rows</p>
+			</form>
+			<div id="report" class="mt-10"></div>
+		</main>
+		@Foot()
+	}
+}
+
+templ ListingError(msg string) {
+	@Window("error") {
+		<p class="font-mono text-xs text-magenta">{ msg }</p>
+	}
+}
+
+templ ListingReport(rep *judge.Report) {
+	@Window("result · listing-hygiene") {
+		<div class="overflow-x-auto">
+			<table class="w-full border-collapse font-mono text-xs">
+				<thead>
+					<tr class="label border-b border-ink text-left">
+						<th class="py-1 pr-3">#</th>
+						<th class="py-1 pr-3">Listing</th>
+						<th class="py-1 pr-3">Risk</th>
+						<th class="py-1">Flags</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, res := range rep.Results {
+						<tr class="border-b border-ink/10 align-top">
+							<td class="py-1.5 pr-3 text-muted">{ fmt.Sprint(res.Listing.Row) }</td>
+							<td class="max-w-[24ch] truncate py-1.5 pr-3">{ listingTitle(res) }</td>
+							<td class="py-1.5 pr-3">
+								if res.Err != "" {
+									<span class="text-muted">—</span>
+								} else {
+									<span class={ riskClass(res.Risk) }>{ pct(res.Risk) }</span>
+								}
+							</td>
+							<td class="py-1.5">
+								if res.Err != "" {
+									<span class="text-magenta">error</span>
+								} else {
+									for _, f := range res.Findings {
+										if f.Flag {
+											<span class="mr-1 mb-1 inline-block border border-ink px-1">{ f.Key }</span>
+										}
+									}
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<p class="label mt-3">
+			{ reportMeta(rep) }
+			if rep.Sample {
+				<span class="text-magenta"> · SAMPLE — set TYPESAFE_API_KEY for live</span>
+			}
+		</p>
+	}
+}

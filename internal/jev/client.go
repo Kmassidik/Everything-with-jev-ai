@@ -27,6 +27,9 @@ func New(apiKey, model string) *Client {
 	return &Client{APIKey: apiKey, Model: model, HTTP: &http.Client{Timeout: 30 * time.Second}}
 }
 
+// Live reports whether a real key is configured. Implements jev.Judge.
+func (c *Client) Live() bool { return c.APIKey != "" }
+
 // Question is one typed question. Type is "choice" | "score" | "noul".
 type Question struct {
 	Type         string `json:"type"`
