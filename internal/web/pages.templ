@@ -1,7 +1,7 @@
 package web
 
 templ Landing(hasKey bool) {
-	@Layout("jevai — score every item, sort what matters") {
+	@Layout("javai — score every item, sort what matters") {
 		@Nav()
 		<main>
 			<!-- hero -->
@@ -21,7 +21,7 @@ templ Landing(hasKey bool) {
 							<a href="#try" class="btn-brand">Start free</a>
 							<a href="#how" class="btn-ghost">See it work</a>
 						</div>
-						<p class="label mt-6">$0.00004 an item · ~300&nbsp;ms · powered by Jev</p>
+						<p class="label mt-6">$0.00004 an item · ~300&nbsp;ms · model: <span class="text-ink">TypeSafe Jev</span></p>
 					</div>
 					<!-- hero visual: a live audit, sorted worst-first -->
 					<div class="card overflow-hidden shadow-[6px_6px_0_0_#14140F]">
@@ -55,6 +55,10 @@ templ Landing(hasKey bool) {
 						@stat("$0.00004", "an item")
 						@stat("100%", "of the pile")
 					</div>
+					<p class="mt-8 font-mono text-sm text-ink/70">
+						Every verdict is a <span class="font-semibold text-ink">TypeSafe Jev</span> call — a
+						model built to score, not chat.
+					</p>
 				</div>
 			</section>
 			<!-- surfaces -->
