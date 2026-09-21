@@ -12,7 +12,7 @@ func (s *Server) claimsPage(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	_ = web.Claims(u).Render(r.Context(), w)
+	_ = web.Claims(u, samplePreview(judge.SampleClaimsCSV, judge.ParseClaimsCSV)).Render(r.Context(), w)
 }
 
 func (s *Server) claimsAudit(w http.ResponseWriter, r *http.Request) {

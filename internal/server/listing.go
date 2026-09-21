@@ -28,8 +28,17 @@ func (s *Server) listingPage(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	_ = web.Listing(u).Render(r.Context(), w)
+	_ = web.Listing(u, samplePreview(judge.SampleListingsCSV, judge.ParseListingsCSV)).Render(r.Context(), w)
 }
+
+// samplePreview parses the first few rows of a built-in sample CSV so a product page
+// can show the actual input as a table before the user runs it.
+func samplePreview(csvStr string, parse func(io.Reader, int) ([]judge.Item, error)) []judge.Item {
+	items, _ := parse(strings.NewReader(csvStr), samplePreviewRows)
+	return items
+}
+
+const samplePreviewRows = 5
 
 func (s *Server) listingAudit(w http.ResponseWriter, r *http.Request) {
 	u, ok := s.requireHTMX(w, r)

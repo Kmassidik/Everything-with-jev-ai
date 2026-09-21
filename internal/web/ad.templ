@@ -1,8 +1,9 @@
 package web
 
 import "jevai/internal/account"
+import "jevai/internal/judge"
 
-templ Ads(user *account.User) {
+templ Ads(user *account.User, sample []judge.Item) {
 	@Layout("javai — ad pre-flight") {
 		@Nav(user)
 		<main class="grid-bg">
@@ -18,7 +19,16 @@ templ Ads(user *account.User) {
 						claims, brand safety, restricted categories, misleading urgency — and whether it
 						matches the landing page. Ranked worst-first, with a CSV to hand the client.
 					</p>
+					@whyUse(
+						"A rejected ad isn't just a rejection — it's spend that never ran, a launch that slipped, and enough strikes to get the whole ad account disabled.",
+						[]string{
+							"Know which variants Meta/TikTok/Google will bounce before you submit, not after.",
+							"Catch creative that promises what the landing page doesn't deliver — the top reason ads get pulled mid-flight.",
+							"Hand the client a clean pre-flight report instead of an apology.",
+						},
+					)
 					@inOut("An ad creative + its landing page", "a rejection-risk score + why it'll get pulled", "e.g. “Lose 10kg in a week — guaranteed!” → 88% · misleading-claim, health-restricted")
+					@sampleTable(sample)
 					@uploadForm("/ads/audit", "/ads/sample", "/ads/sample.csv", "creative · landing · platform · max 200 variants")
 					<div id="report" class="mt-10"></div>
 				</div>

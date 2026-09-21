@@ -1,8 +1,9 @@
 package web
 
 import "jevai/internal/account"
+import "jevai/internal/judge"
 
-templ Claims(user *account.User) {
+templ Claims(user *account.User, sample []judge.Item) {
 	@Layout("javai — claim screening") {
 		@Nav(user)
 		<main class="grid-bg">
@@ -18,7 +19,16 @@ templ Claims(user *account.User) {
 						disease claims, guaranteed results, asserted certifications and restricted
 						ingredients. Ranked worst-first, with a CSV to act on.
 					</p>
+					@whyUse(
+						"One wrong claim on a label or ad can trigger a BPOM/BPJPH takedown, a fine, or a lawsuit — and the copywriter who wrote it usually didn't know it crossed the line.",
+						[]string{
+							"Flag disease claims (“cures”, “treats”) and “clinically proven” before they ship.",
+							"Screen every SKU's copy at once — packaging, listings and ads — not just the ones someone remembered to check.",
+							"Turn a vague legal worry into a ranked list of exactly which lines to rewrite.",
+						},
+					)
 					@inOut("A line of marketing copy", "a risk score + the claim types that'll bite", "e.g. “Clinically proven to cure diabetes” → 96% · disease-claim, unverified-certification")
+					@sampleTable(sample)
 					@uploadForm("/claims/audit", "/claims/sample", "/claims/sample.csv", "copy · category · max 200 rows")
 					<div id="report" class="mt-10"></div>
 					<p class="label mt-10 max-w-2xl leading-relaxed">
