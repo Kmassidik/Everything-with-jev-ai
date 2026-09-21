@@ -24,11 +24,12 @@ const sessionCookie = "javai_session"
 
 // Config is the engine's runtime configuration (secrets come from the environment).
 type Config struct {
-	Port        string
-	JevModel    string
-	JevKey      string
-	TrialTokens int
-	AdminToken  string // gates /admin (invite minting); empty disables the admin page
+	Port          string
+	JevModel      string
+	JevKey        string
+	TrialTokens   int
+	AdminToken    string // gates the bootstrap /admin?token= page (mint the first invite)
+	AdminUsername string // this username sees invite management in their dashboard
 }
 
 // Server holds the handler dependencies.
@@ -79,6 +80,8 @@ func (s *Server) routes() {
 
 	// authenticated app
 	s.mux.HandleFunc("GET /app", s.dashboard)
+	s.mux.HandleFunc("POST /invites/new", s.inviteNew)
+	s.mux.HandleFunc("POST /invites/revoke", s.inviteRevoke)
 	s.mux.HandleFunc("GET /profile", s.profilePage)
 	s.mux.HandleFunc("POST /profile/name", s.profileName)
 	s.mux.HandleFunc("POST /profile/password", s.profilePassword)
@@ -252,6 +255,22 @@ func (s *Server) adminInvite(w http.ResponseWriter, r *http.Request) {
 
 // ---- dashboard & profile ----
 
+func (s *Server) isAdmin(u *account.User) bool {
+	return u != nil && s.cfg.AdminUsername != "" && u.Username == s.cfg.AdminUsername
+}
+
+func baseURL(r *http.Request) string {
+	proto := r.Header.Get("X-Forwarded-Proto")
+	if proto == "" {
+		if r.TLS != nil {
+			proto = "https"
+		} else {
+			proto = "http"
+		}
+	}
+	return proto + "://" + r.Host
+}
+
 func (s *Server) dashboard(w http.ResponseWriter, r *http.Request) {
 	u, ok := s.requirePage(w, r)
 	if !ok {
@@ -259,7 +278,51 @@ func (s *Server) dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	recent, _ := s.audits.ListByUser(r.Context(), u.ID, 20)
 	usage, _ := s.ledger.Usage(r.Context(), u.Username)
-	_ = web.Dashboard(u, recent, usage, billing.Evaluate(usage.Tokens(), s.plan)).Render(r.Context(), w)
+	d := web.DashData{
+		User: u, Recent: recent, Usage: usage,
+		Gate:    billing.Evaluate(usage.Tokens(), s.plan),
+		IsAdmin: s.isAdmin(u),
+		BaseURL: baseURL(r),
+	}
+	if d.IsAdmin {
+		d.Invites, _ = s.accounts.ListInvites(r.Context())
+	}
+	_ = web.Dashboard(d).Render(r.Context(), w)
+}
+
+// requireAdmin ensures the caller is logged in and is the admin user.
+func (s *Server) requireAdmin(w http.ResponseWriter, r *http.Request) (*account.User, bool) {
+	u, ok := s.requirePage(w, r)
+	if !ok {
+		return nil, false
+	}
+	if !s.isAdmin(u) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return nil, false
+	}
+	return u, true
+}
+
+func (s *Server) inviteNew(w http.ResponseWriter, r *http.Request) {
+	if _, ok := s.requireAdmin(w, r); !ok {
+		return
+	}
+	_ = r.ParseForm()
+	if _, err := s.accounts.CreateInvite(r.Context(), r.FormValue("note")); err != nil {
+		s.log.Warn("create invite failed", "err", err)
+	}
+	http.Redirect(w, r, "/app", http.StatusFound)
+}
+
+func (s *Server) inviteRevoke(w http.ResponseWriter, r *http.Request) {
+	if _, ok := s.requireAdmin(w, r); !ok {
+		return
+	}
+	_ = r.ParseForm()
+	if err := s.accounts.RevokeInvite(r.Context(), r.FormValue("token")); err != nil {
+		s.log.Warn("revoke invite failed", "err", err)
+	}
+	http.Redirect(w, r, "/app", http.StatusFound)
 }
 
 func (s *Server) profilePage(w http.ResponseWriter, r *http.Request) {

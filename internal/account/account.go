@@ -117,6 +117,12 @@ func (s *Store) InviteValid(ctx context.Context, token string) bool {
 	return err == nil && ok
 }
 
+// RevokeInvite deletes an unused invite (no effect once it's been used).
+func (s *Store) RevokeInvite(ctx context.Context, token string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM invites WHERE token = ? AND used_by IS NULL`, token)
+	return err
+}
+
 func (s *Store) ListInvites(ctx context.Context) ([]Invite, error) {
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT token, note, created_at, used_by FROM invites ORDER BY created_at DESC LIMIT 100`)
