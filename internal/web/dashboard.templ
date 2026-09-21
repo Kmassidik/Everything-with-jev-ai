@@ -25,9 +25,9 @@ templ Dashboard(d DashData) {
 				</div>
 				<h2 class="label mt-14">Run a product</h2>
 				<div class="mt-4 grid gap-4 sm:grid-cols-3">
-					@surfaceCard("01", "Listing hygiene", "messy catalogue → ranked fix list", "/listing")
-					@surfaceCard("02", "Ad pre-flight", "variants → what'll get rejected", "/ads")
-					@surfaceCard("03", "Claim screening", "copy → the claims that'll bite you", "/claims")
+					@surfaceCard("listing", "Listing hygiene", "messy catalogue → ranked fix list", "/listing")
+					@surfaceCard("ad", "Ad pre-flight", "variants → what'll get rejected", "/ads")
+					@surfaceCard("claim", "Claim screening", "copy → the claims that'll bite you", "/claims")
 				</div>
 				if d.IsAdmin {
 					@invitePanel(d)

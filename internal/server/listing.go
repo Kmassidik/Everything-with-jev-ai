@@ -74,10 +74,15 @@ func (s *Server) runBatch(w http.ResponseWriter, r *http.Request, u *account.Use
 		_ = web.ErrorBox(err.Error()).Render(r.Context(), w)
 		return
 	}
+	s.runItems(w, r, u, pack, items)
+}
+
+// runItems judges parsed items, meters, saves, and renders — shared by uploads and
+// the "Run the sample" button.
+func (s *Server) runItems(w http.ResponseWriter, r *http.Request, u *account.User, pack judge.Pack, items []judge.Item) {
 	if s.gated(w, r, u.Username) {
 		return
 	}
-
 	ctx, cancel := context.WithTimeout(r.Context(), auditTimeout)
 	defer cancel()
 
@@ -87,7 +92,6 @@ func (s *Server) runBatch(w http.ResponseWriter, r *http.Request, u *account.Use
 		_ = web.ErrorBox("Run failed: "+err.Error()).Render(r.Context(), w)
 		return
 	}
-
 	if err := s.ledger.Record(r.Context(), u.Username, report.TokensIn, report.TokensOut, report.Judgments); err != nil {
 		s.log.Warn("ledger record failed", "err", err)
 	}

@@ -8,14 +8,18 @@ templ Ads(user *account.User) {
 		<main class="grid-bg">
 			<div class="wrap py-16">
 				<div class="max-w-3xl">
-					<span class="label">Surface · ad pre-flight</span>
-					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">Pre-flight the whole campaign.</h1>
+					<div class="flex items-center gap-3">
+						@iconBadge("ad")
+						<span class="label">Surface · ad pre-flight</span>
+					</div>
+					<h1 class="mt-4 font-display text-4xl font-bold tracking-tight sm:text-5xl">Pre-flight the whole campaign.</h1>
 					<p class="mt-4 max-w-xl text-muted">
 						Upload your ad variants before you spend. Every creative is screened for prohibited
 						claims, brand safety, restricted categories, misleading urgency — and whether it
 						matches the landing page. Ranked worst-first, with a CSV to hand the client.
 					</p>
-					@uploadForm("/ads/audit", "creative · landing · platform · max 200 variants")
+					@inOut("An ad creative + its landing page", "a rejection-risk score + why it'll get pulled", "e.g. “Lose 10kg in a week — guaranteed!” → 88% · misleading-claim, health-restricted")
+					@uploadForm("/ads/audit", "/ads/sample", "/ads/sample.csv", "creative · landing · platform · max 200 variants")
 					<div id="report" class="mt-10"></div>
 				</div>
 			</div>

@@ -8,14 +8,18 @@ templ Claims(user *account.User) {
 		<main class="grid-bg">
 			<div class="wrap py-16">
 				<div class="max-w-3xl">
-					<span class="label">Surface · claim screening</span>
-					<h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">Screen every claim.</h1>
+					<div class="flex items-center gap-3">
+						@iconBadge("claim")
+						<span class="label">Surface · claim screening</span>
+					</div>
+					<h1 class="mt-4 font-display text-4xl font-bold tracking-tight sm:text-5xl">Screen every claim.</h1>
 					<p class="mt-4 max-w-xl text-muted">
 						Upload a CSV of copy — listings, ads, packaging. Every piece is checked for
 						disease claims, guaranteed results, asserted certifications and restricted
 						ingredients. Ranked worst-first, with a CSV to act on.
 					</p>
-					@uploadForm("/claims/audit", "copy · category · max 200 rows")
+					@inOut("A line of marketing copy", "a risk score + the claim types that'll bite", "e.g. “Clinically proven to cure diabetes” → 96% · disease-claim, unverified-certification")
+					@uploadForm("/claims/audit", "/claims/sample", "/claims/sample.csv", "copy · category · max 200 rows")
 					<div id="report" class="mt-10"></div>
 					<p class="label mt-10 max-w-2xl leading-relaxed">
 						Screening aid — not legal advice. Rules are illustrative and UNVERIFIED; check BPOM /

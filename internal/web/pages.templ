@@ -69,9 +69,9 @@ templ Landing(user *account.User, hasKey bool) {
 					<span class="label">What you can score</span>
 					<h2 class="mt-3 font-display text-5xl font-bold tracking-tight">One engine. Every pile worth sorting.</h2>
 					<div class="mt-12 grid gap-4 sm:grid-cols-3">
-						@surfaceCard("01", "Listing hygiene", "messy catalogue → ranked fix list", "/listing")
-						@surfaceCard("02", "Ad pre-flight", "creative + landing → what'll get rejected", "/ads")
-						@surfaceCard("03", "Claim screening", "copy → the claims that'll bite you", "/claims")
+						@surfaceCard("listing", "Listing hygiene", "messy catalogue → ranked fix list", "/listing")
+						@surfaceCard("ad", "Ad pre-flight", "creative + landing → what'll get rejected", "/ads")
+						@surfaceCard("claim", "Claim screening", "copy → the claims that'll bite you", "/claims")
 					</div>
 				</div>
 			</section>
@@ -122,13 +122,13 @@ templ stat(big, small string) {
 	</div>
 }
 
-templ surfaceCard(idx, title, desc, href string) {
+templ surfaceCard(iconName, title, desc, href string) {
 	<a href={ templ.SafeURL(href) } class="card group flex flex-col p-6 transition hover:-translate-y-1 hover:border-ink hover:shadow-[5px_5px_0_0_#C6F24E]">
 		<div class="flex items-center justify-between">
-			<span class="font-mono text-xs text-muted">{ idx }</span>
-			<span class="transition group-hover:translate-x-1">→</span>
+			@iconBadge(iconName)
+			<span class="text-lg transition group-hover:translate-x-1">→</span>
 		</div>
-		<div class="mt-8 font-display text-2xl font-bold tracking-tight">{ title }</div>
+		<div class="mt-6 font-display text-2xl font-bold tracking-tight">{ title }</div>
 		<div class="mt-1 font-mono text-xs text-muted">{ desc }</div>
 	</a>
 }

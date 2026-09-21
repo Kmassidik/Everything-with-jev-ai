@@ -87,10 +87,16 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /profile/password", s.profilePassword)
 	s.mux.HandleFunc("GET /listing", s.listingPage)
 	s.mux.HandleFunc("POST /listing/audit", s.listingAudit)
+	s.mux.HandleFunc("POST /listing/sample", s.listingSample)
+	s.mux.HandleFunc("GET /listing/sample.csv", s.listingSampleCSV)
 	s.mux.HandleFunc("GET /ads", s.adsPage)
 	s.mux.HandleFunc("POST /ads/audit", s.adsAudit)
+	s.mux.HandleFunc("POST /ads/sample", s.adsSample)
+	s.mux.HandleFunc("GET /ads/sample.csv", s.adsSampleCSV)
 	s.mux.HandleFunc("GET /claims", s.claimsPage)
 	s.mux.HandleFunc("POST /claims/audit", s.claimsAudit)
+	s.mux.HandleFunc("POST /claims/sample", s.claimsSample)
+	s.mux.HandleFunc("GET /claims/sample.csv", s.claimsSampleCSV)
 }
 
 // ---- session helpers ----
